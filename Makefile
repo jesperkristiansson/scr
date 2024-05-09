@@ -11,3 +11,6 @@ client : $(SRC_DIR)/client.cc
 
 server : $(SRC_DIR)/server.cc
 	$(CXX) $(CXXFlAGS) -o $@ $< $(LDFlAGS)
+
+clean :
+	$(RM) client server
