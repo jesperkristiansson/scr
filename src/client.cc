@@ -1,3 +1,5 @@
+#include "utils.h"
+
 #include <iostream>
 #include <string>
 
@@ -15,8 +17,7 @@ int main(int argc, char **argv){
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
-        return EXIT_FAILURE;
+        FAIL(e.what());
     }
 
     std::cout << "Client connecting to " << ip << ":" << port << std::endl;
