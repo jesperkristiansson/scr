@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <cstdio>
 #include <iostream>
 #include <string>
 
@@ -11,6 +12,23 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+
+bool send_data(int sock_fd, const void *data, size_t size){
+    while(size){
+        std::cout << "sending data" << std::endl;
+        int bytes_sent = send(sock_fd, data, size, 0);
+        if(bytes_sent == -1){
+            perror("send()");
+            return false;;
+        } else if(bytes_sent == 0){
+            std::cerr << "send wasn't able to send any data" << std::endl;
+            return false;   //?
+        } else{
+            size -= bytes_sent;
+        }
+    }
+    return true;
+}
 
 int main(int argc, char **argv){
     assert(argc == 3);
@@ -48,15 +66,15 @@ int main(int argc, char **argv){
         FAIL("inet_aton()");
     }
 
-    int server_fd = connect(client_fd, (struct sockaddr *)&server_sa, sizeof(server_sa));
-    if(server_fd == -1){
+    if(connect(client_fd, (struct sockaddr *)&server_sa, sizeof(server_sa)) == -1){
         perror("connect()");
         exit(EXIT_FAILURE);
     }
 
     std::cout << "Connected to: " << inet_ntoa(server_sa.sin_addr) << ":" << ntohs(server_sa.sin_port) << std::endl;
+    char msg[200] = "test";
+    send_data(client_fd, msg, sizeof(msg));
 
-    close(server_fd);
     close(client_fd);
 
     return EXIT_SUCCESS;

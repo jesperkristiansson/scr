@@ -89,6 +89,36 @@ bool accept_connections(int server_fd, std::vector<struct pollfd> &vec){
     return true;
 }
 
+bool handle_poll_event(struct pollfd& item){
+    if(item.revents == 0 || item.events < 0){
+        return true;
+    }
+    //std::cout << item.revents << std::endl;
+    assert(item.revents == POLLIN);
+    constexpr size_t buf_size = 128;
+    char buf[buf_size];
+    // shouldn't ever block, since poll says it has an event
+    ssize_t bytes = recv(item.fd, buf, buf_size - 1, 0);
+    //connection closed
+    if(bytes == -1){
+        perror("bytes");
+        return false;
+    } else if(bytes == 0){
+        std::cout << "Connection closed by client " << item.fd << std::endl;
+        if(close(item.fd) == -1){
+            perror("close()");
+            return false;
+        }
+        //leaves the item in the vector, this should be fixed
+        item.events = -1;
+    } else{
+        buf[bytes] = '\0';
+        std::cout << "Received message : \"" << buf << "\" from client " << item.fd << std::endl;
+        //handle events
+    }
+    return true;
+}
+
 bool server_loop(int server_fd){
     if(!make_nonblocking(server_fd)){
         return false;
@@ -103,11 +133,7 @@ bool server_loop(int server_fd){
             return false;
         } else if(num_events > 0){
             for(auto &item : items){
-                if(item.revents == 0){
-                    continue;
-                }
-
-                //handle events
+                if(!handle_poll_event(item)) return false;
             }
         }
 
