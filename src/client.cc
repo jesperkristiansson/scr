@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "networking.h"
 
 #include <cstdio>
 #include <iostream>
@@ -12,22 +13,49 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <poll.h>
 
-bool send_data(int sock_fd, const void *data, size_t size){
-    while(size){
-        std::cout << "sending data" << std::endl;
-        int bytes_sent = send(sock_fd, data, size, 0);
-        if(bytes_sent == -1){
-            perror("send()");
-            return false;;
-        } else if(bytes_sent == 0){
-            std::cerr << "send wasn't able to send any data" << std::endl;
-            return false;   //?
-        } else{
-            size -= bytes_sent;
-        }
+inline std::string read_line(){
+    std::string line;
+    std::getline(std::cin, line);
+    return line;
+}
+
+bool client_loop(int client_fd){
+    if(!make_nonblocking(client_fd)){
+        return false;
     }
-    return true;
+
+    constexpr int stdin_index = 0;
+    constexpr int server_index = 1;
+    struct pollfd items[2];
+    items[stdin_index] = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
+    items[server_index] = {.fd = client_fd, .events = POLLIN, .revents = 0};
+    struct pollfd &stdin_item = items[stdin_index];
+    struct pollfd &server_item = items[server_index];
+
+    constexpr int timeout_ms = 100;
+    while(1){
+        int num_events = poll(items, 2, timeout_ms);
+        if(num_events == -1){
+            perror("poll()");
+            return false;
+        } else if(num_events > 0){
+            if(stdin_item.revents){
+                std::string msg = read_line();
+                send_data(client_fd, msg.data(), msg.size());
+            }
+            if(server_item.revents){
+                //get packet from server
+                std::vector<unsigned char> data = receive_data(client_fd);
+                std::string msg(reinterpret_cast<const char *>(data.data()), data.size());
+                std::cout << "msg from server: " << msg << std::endl;
+            }
+        }
+
+    }
+    return 1;
 }
 
 int main(int argc, char **argv){
@@ -72,8 +100,8 @@ int main(int argc, char **argv){
     }
 
     std::cout << "Connected to: " << inet_ntoa(server_sa.sin_addr) << ":" << ntohs(server_sa.sin_port) << std::endl;
-    char msg[200] = "test";
-    send_data(client_fd, msg, sizeof(msg));
+
+    client_loop(client_fd);
 
     close(client_fd);
 
