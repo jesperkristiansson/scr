@@ -6,11 +6,11 @@ SRC_DIR = src
 
 all : client server
 
-client : $(SRC_DIR)/client.cc
-	$(CXX) $(CXXFlAGS) -o $@ $< $(LDFlAGS)
+client : $(SRC_DIR)/client.cc $(SRC_DIR)/networking.cc
+	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS)
 
-server : $(SRC_DIR)/server.cc
-	$(CXX) $(CXXFlAGS) -o $@ $< $(LDFlAGS)
+server : $(SRC_DIR)/server.cc $(SRC_DIR)/networking.cc
+	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS)
 
 clean :
 	$(RM) client server
