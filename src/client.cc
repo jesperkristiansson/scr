@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "networking.h"
+#include "protocol.h"
 
 #include <cstdio>
 #include <iostream>
@@ -23,7 +24,7 @@ inline std::string read_line(){
 }
 
 bool client_loop(int client_fd){
-    if(!make_nonblocking(client_fd)){
+    if(!make_timeout(client_fd, 1000)){
         return false;
     }
 
@@ -44,13 +45,27 @@ bool client_loop(int client_fd){
         } else if(num_events > 0){
             if(stdin_item.revents){
                 std::string msg = read_line();
-                send_data(client_fd, msg.data(), msg.size());
+                struct header header;
+                header.type = MESSAGE;
+                send_header(client_fd, header);
+                send_message(client_fd, msg);
             }
             if(server_item.revents){
                 //get packet from server
-                std::vector<unsigned char> data = receive_data(client_fd);
-                std::string msg(reinterpret_cast<const char *>(data.data()), data.size());
-                std::cout << "msg from server: " << msg << std::endl;
+                struct header header = receive_header(client_fd);
+                if(header.type == QUIT){
+                    std::cout << "connection lost" << std::endl;
+                    close(client_fd);
+                    break;
+                } else{
+                    assert(header.type == MESSAGE);
+                    std::string msg = receive_message(client_fd);
+                    std::cout << "msg from server: " << msg << std::endl;
+                }
+
+                // std::vector<unsigned char> data = receive_data(client_fd);
+                // std::string msg(reinterpret_cast<const char *>(data.data()), data.size());
+                // std::cout << "msg from server: " << msg << std::endl;
             }
         }
 

@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "networking.h"
+#include "protocol.h"
 
 #include <iostream>
 #include <string>
@@ -71,6 +72,7 @@ bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, std::uno
             perror("accept()");
             return false;
         }
+        make_timeout(client_fd, 1000);
         const char *client_ip = inet_ntoa(client_sa.sin_addr);
         uint16_t client_port = ntohs(client_sa.sin_port);
         std::cout << "Client connected: " << client_ip << ":" << client_port << std::endl;
@@ -87,16 +89,9 @@ bool handle_poll_event(struct pollfd& item, std::unordered_set<int> &members){
         return true;
     }
     //std::cout << item.revents << std::endl;
-    assert(item.revents == POLLIN);
-    constexpr size_t buf_size = 128;
-    char buf[buf_size];
     // shouldn't ever block, since poll says it has an event
-    ssize_t bytes = recv(item.fd, buf, buf_size - 1, 0);
-    //connection closed
-    if(bytes == -1){
-        perror("bytes");
-        return false;
-    } else if(bytes == 0){
+    struct header header = receive_header(item.fd);
+    if(header.type == QUIT){
         std::cout << "Connection closed by client " << item.fd << std::endl;
         if(close(item.fd) == -1){
             perror("close()");
@@ -106,14 +101,15 @@ bool handle_poll_event(struct pollfd& item, std::unordered_set<int> &members){
         //leaves the item in the vector, this should be fixed
         item.events = -1;
     } else{
-        buf[bytes] = '\0';
-        std::cout << "Received message : \"" << buf << "\" from client " << item.fd << std::endl;
-
+        assert(header.type == MESSAGE);
+        std::string msg = receive_message(item.fd);
+        std::cout << "Received message : \"" << msg << "\" from client " << item.fd << std::endl;
         for(const auto &member_fd : members){
             if(member_fd == item.fd){
                 continue;
             }
-            send_data(member_fd, buf, bytes + 1);
+            send_header(member_fd, header);
+            send_message(member_fd, msg);
         }
     }
     return true;
