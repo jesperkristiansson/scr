@@ -6,7 +6,8 @@
 
 enum packet_type : uint16_t {
     MESSAGE,
-    QUIT
+    QUIT,
+    JOIN,
 };
 
 struct header{

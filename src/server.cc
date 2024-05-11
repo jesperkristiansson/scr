@@ -91,26 +91,39 @@ bool handle_poll_event(struct pollfd& item, std::unordered_set<int> &members){
     //std::cout << item.revents << std::endl;
     // shouldn't ever block, since poll says it has an event
     struct header header = receive_header(item.fd);
-    if(header.type == QUIT){
-        std::cout << "Connection closed by client " << item.fd << std::endl;
-        if(close(item.fd) == -1){
-            perror("close()");
-            return false;
-        }
-        members.erase(item.fd);
-        //leaves the item in the vector, this should be fixed
-        item.events = -1;
-    } else{
-        assert(header.type == MESSAGE);
-        std::string msg = receive_message(item.fd);
-        std::cout << "Received message : \"" << msg << "\" from client " << item.fd << std::endl;
-        for(const auto &member_fd : members){
-            if(member_fd == item.fd){
-                continue;
+    switch(header.type){
+        case MESSAGE:
+            {
+                std::string msg = receive_message(item.fd);
+                std::cout << "Received message : \"" << msg << "\" from client " << item.fd << std::endl;
+                for(const auto &member_fd : members){
+                    if(member_fd == item.fd){
+                        continue;
+                    }
+                    send_header(member_fd, header);
+                    send_message(member_fd, msg);
+                }
             }
-            send_header(member_fd, header);
-            send_message(member_fd, msg);
-        }
+            break;
+        case QUIT:
+            std::cout << "Connection closed by client " << item.fd << std::endl;
+            if(close(item.fd) == -1){
+                perror("close()");
+                return false;
+            }
+            members.erase(item.fd);
+            //leaves the item in the vector, this should be fixed
+            item.events = -1;
+            break;
+        case JOIN:
+            {
+                std::string target_room = receive_message(item.fd);
+                std::cout << "Received join request to " << target_room << " by clients " << item.fd << std::endl;
+            }
+            break;
+        default:
+            std::cerr << "received unknown packet type from client " << item.fd << ": " << header.type << std::endl;
+            //handle this? could reply that it was an unknown type, kill them, or ignore it
     }
     return true;
 }

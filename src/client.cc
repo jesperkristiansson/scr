@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include <cstdint>
 #include <cstring>
@@ -21,6 +22,58 @@ inline std::string read_line(){
     std::string line;
     std::getline(std::cin, line);
     return line;
+}
+
+struct command{
+    const char *command_text;
+    enum packet_type type;
+    bool has_argument;
+};
+
+constexpr struct command registered_commands[] = {
+    {.command_text = "join", .type = JOIN, .has_argument = true},
+    {.command_text = "quit", .type = QUIT, .has_argument = false},
+    };
+
+bool handle_input(int client_fd){
+    std::string msg = read_line();
+    struct header header;
+    bool should_send_message = false;
+    if(msg.size() && msg[0] == '/'){    //is a command
+        std::stringstream ss(msg);
+        std::string command;
+        ss >> command;
+
+        bool command_found = false;
+        for(struct command registered_command : registered_commands){
+            if(command.compare(1, std::string::npos, registered_command.command_text) == 0){
+                //do command
+                header.type = registered_command.type;
+                should_send_message = registered_command.has_argument;
+                command_found = true;
+                break;
+            }
+        }
+        if(!command_found){
+            std::cerr << "command \"" << command << "\" does not exist" << std::endl;
+            return false;
+        }
+
+        if(should_send_message){
+            ss >> msg;
+        }
+    } else{
+        header.type = MESSAGE;
+        should_send_message = true;
+    }
+
+    if(!send_header(client_fd, header)){
+        return false;
+    }
+    if(!send_message(client_fd, msg)){
+        return false;
+    }
+    return true;
 }
 
 bool client_loop(int client_fd){
@@ -44,11 +97,7 @@ bool client_loop(int client_fd){
             return false;
         } else if(num_events > 0){
             if(stdin_item.revents){
-                std::string msg = read_line();
-                struct header header;
-                header.type = MESSAGE;
-                send_header(client_fd, header);
-                send_message(client_fd, msg);
+                handle_input(client_fd);
             }
             if(server_item.revents){
                 //get packet from server
