@@ -114,6 +114,7 @@ bool handle_poll_event(struct pollfd& item, house &house){
             {
                 std::string target_room = receive_message(item.fd);
                 std::cout << "Received join request to " << target_room << " by client " << item.fd << std::endl;
+                house.move_user(item.fd, target_room);
             }
             break;
         default:
