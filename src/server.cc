@@ -113,7 +113,7 @@ bool handle_poll_event(struct pollfd& item, house &house){
         case JOIN:
             {
                 std::string target_room = receive_message(item.fd);
-                std::cout << "Received join request to " << target_room << " by clients " << item.fd << std::endl;
+                std::cout << "Received join request to " << target_room << " by client " << item.fd << std::endl;
             }
             break;
         default:
