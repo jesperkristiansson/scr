@@ -7,6 +7,7 @@
 class room{
     public:
         room(std::string name) : name{name} {}
+        std::string getName() const {return name;}
         bool add_member(int member);
         bool remove_member(int member);
         bool send_message_from(std::string message, int from);
