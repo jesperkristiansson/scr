@@ -1,11 +1,12 @@
 #include "utils.h"
 #include "networking.h"
 #include "protocol.h"
-#include "room.h"
+#include "house.h"
 
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include <cerrno>
 #include <cstdio>
@@ -58,7 +59,7 @@ int server_setup(uint16_t port){
 }
 
 //assumes non-blocking socket
-bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, room &room){
+bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, house &house){
     while(1){
         struct sockaddr_in client_sa;
         socklen_t client_sa_len;
@@ -78,13 +79,13 @@ bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, room &ro
         std::cout << "Client connected: " << client_ip << ":" << client_port << std::endl;
         struct pollfd client = {.fd = client_fd, .events = POLLIN, .revents = 0};
         vec.push_back(client);
-        room.add_member(client_fd);
+        house.add_user(client_fd);
     }
 
     return true;
 }
 
-bool handle_poll_event(struct pollfd& item, room &room){
+bool handle_poll_event(struct pollfd& item, house &house){
     if(item.revents == 0 || item.events < 0){
         return true;
     }
@@ -96,7 +97,7 @@ bool handle_poll_event(struct pollfd& item, room &room){
             {
                 std::string msg = receive_message(item.fd);
                 std::cout << "Received message : \"" << msg << "\" from client " << item.fd << std::endl;
-                room.send_message_from(msg, item.fd);
+                house.echo_message(item.fd, msg);
             }
             break;
         case QUIT:
@@ -105,7 +106,7 @@ bool handle_poll_event(struct pollfd& item, room &room){
                 perror("close()");
                 return false;
             }
-            room.remove_member(item.fd);
+            house.remove_user(item.fd);
             //leaves the item in the vector, this should be fixed
             item.events = -1;
             break;
@@ -123,7 +124,7 @@ bool handle_poll_event(struct pollfd& item, room &room){
 }
 
 bool server_loop(int server_fd){
-    room default_room("default");
+    house house;
 
     if(!make_nonblocking(server_fd)){
         return false;
@@ -131,17 +132,16 @@ bool server_loop(int server_fd){
     std::vector<struct pollfd> items;
     constexpr int timeout_ms = 100;
     while(1){
-        accept_connections(server_fd, items, default_room);
+        accept_connections(server_fd, items, house);
         int num_events = poll(items.data(), items.size(), timeout_ms);
         if(num_events == -1){
             perror("poll()");
             return false;
         } else if(num_events > 0){
             for(auto &item : items){
-                if(!handle_poll_event(item, default_room)) return false;
+                if(!handle_poll_event(item, house)) return false;
             }
         }
-
     }
     return 1;
 }
