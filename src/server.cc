@@ -1,11 +1,11 @@
 #include "utils.h"
 #include "networking.h"
 #include "protocol.h"
+#include "room.h"
 
 #include <iostream>
 #include <string>
 #include <vector>
-#include <unordered_set>
 
 #include <cerrno>
 #include <cstdio>
@@ -58,7 +58,7 @@ int server_setup(uint16_t port){
 }
 
 //assumes non-blocking socket
-bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, std::unordered_set<int> &members){
+bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, room &room){
     while(1){
         struct sockaddr_in client_sa;
         socklen_t client_sa_len;
@@ -78,13 +78,13 @@ bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, std::uno
         std::cout << "Client connected: " << client_ip << ":" << client_port << std::endl;
         struct pollfd client = {.fd = client_fd, .events = POLLIN, .revents = 0};
         vec.push_back(client);
-        members.insert(client_fd);
+        room.add_member(client_fd);
     }
 
     return true;
 }
 
-bool handle_poll_event(struct pollfd& item, std::unordered_set<int> &members){
+bool handle_poll_event(struct pollfd& item, room &room){
     if(item.revents == 0 || item.events < 0){
         return true;
     }
@@ -96,13 +96,7 @@ bool handle_poll_event(struct pollfd& item, std::unordered_set<int> &members){
             {
                 std::string msg = receive_message(item.fd);
                 std::cout << "Received message : \"" << msg << "\" from client " << item.fd << std::endl;
-                for(const auto &member_fd : members){
-                    if(member_fd == item.fd){
-                        continue;
-                    }
-                    send_header(member_fd, header);
-                    send_message(member_fd, msg);
-                }
+                room.send_message_from(msg, item.fd);
             }
             break;
         case QUIT:
@@ -111,7 +105,7 @@ bool handle_poll_event(struct pollfd& item, std::unordered_set<int> &members){
                 perror("close()");
                 return false;
             }
-            members.erase(item.fd);
+            room.remove_member(item.fd);
             //leaves the item in the vector, this should be fixed
             item.events = -1;
             break;
@@ -129,7 +123,7 @@ bool handle_poll_event(struct pollfd& item, std::unordered_set<int> &members){
 }
 
 bool server_loop(int server_fd){
-    std::unordered_set<int> members;
+    room default_room("default");
 
     if(!make_nonblocking(server_fd)){
         return false;
@@ -137,14 +131,14 @@ bool server_loop(int server_fd){
     std::vector<struct pollfd> items;
     constexpr int timeout_ms = 100;
     while(1){
-        accept_connections(server_fd, items, members);
+        accept_connections(server_fd, items, default_room);
         int num_events = poll(items.data(), items.size(), timeout_ms);
         if(num_events == -1){
             perror("poll()");
             return false;
         } else if(num_events > 0){
             for(auto &item : items){
-                if(!handle_poll_event(item, members)) return false;
+                if(!handle_poll_event(item, default_room)) return false;
             }
         }
 
