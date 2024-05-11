@@ -61,6 +61,10 @@ bool handle_input(int client_fd){
 
         if(should_send_message){
             ss >> msg;
+            if(ss.fail()){
+                std::cerr << "command \"" << command << "\" requires an argument" << std::endl;
+                return false;
+            }
         }
     } else{
         header.type = MESSAGE;
