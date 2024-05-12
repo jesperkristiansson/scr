@@ -3,15 +3,27 @@ CXXFlAGS = -O2 --std=c++17 -Wall -Wextra -g -I$(INCLUDE_DIR)
 LDFlAGS =
 INCLUDE_DIR = include
 SRC_DIR = src
-SRC_LIB = $(SRC_DIR)/networking.cc $(SRC_DIR)/protocol.cc $(SRC_DIR)/room.cc $(SRC_DIR)/house.cc
+
+COMMON_DIR = $(SRC_DIR)/common
+SERVER_DIR = $(SRC_DIR)/server
+CLIENT_DIR = $(SRC_DIR)/client
+COMMON_FILES = $(wildcard $(COMMON_DIR)/*.cc)
+SERVER_FILES = $(wildcard $(SERVER_DIR)/*.cc)
+CLIENT_FILES = $(wildcard $(CLIENT_DIR)/*.cc)
+COMMON_OBJS = $(patsubst %.cc,%.o,$(COMMON_FILES))
+SERVER_OBJS = $(patsubst %.cc,%.o,$(SERVER_FILES))
+CLIENT_OBJS = $(patsubst %.cc,%.o,$(CLIENT_FILES))
 
 all : client server
 
-client : $(SRC_DIR)/client.cc $(SRC_LIB)
+%.o : %.cc
+	$(CXX) $(CXXFlAGS) -c -o $@ $^ $(LDFlAGS)
+
+client : $(CLIENT_OBJS) $(COMMON_OBJS)
 	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS)
 
-server : $(SRC_DIR)/server.cc $(SRC_LIB)
+server : $(SERVER_OBJS) $(COMMON_OBJS)
 	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS)
 
 clean :
-	$(RM) client server
+	$(RM) client server $(SERVER_OBJS) $(CLIENT_OBJS) $(COMMON_OBJS)
