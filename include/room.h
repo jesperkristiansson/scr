@@ -4,9 +4,9 @@
 #include <unordered_set>
 #include <string>
 
-class room{
+class Room{
     public:
-        room(std::string name) : name{name} {}
+        Room(std::string name) : name{name} {}
         std::string getName() const {return name;}
         bool add_member(int member);
         bool remove_member(int member);

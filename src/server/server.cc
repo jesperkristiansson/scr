@@ -59,7 +59,7 @@ int server_setup(uint16_t port){
 }
 
 //assumes non-blocking socket
-bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, house &house){
+bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, House &house){
     while(1){
         struct sockaddr_in client_sa;
         socklen_t client_sa_len;
@@ -85,7 +85,7 @@ bool accept_connections(int server_fd, std::vector<struct pollfd> &vec, house &h
     return true;
 }
 
-bool handle_poll_event(struct pollfd& item, house &house){
+bool handle_poll_event(struct pollfd& item, House &house){
     if(item.revents == 0 || item.events < 0){
         return true;
     }
@@ -125,7 +125,7 @@ bool handle_poll_event(struct pollfd& item, house &house){
 }
 
 bool server_loop(int server_fd){
-    house house;
+    House house;
 
     if(!make_nonblocking(server_fd)){
         return false;
