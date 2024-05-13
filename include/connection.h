@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include <cstddef>
+
 class Connection{
     public:
         Connection(int sock_fd);
