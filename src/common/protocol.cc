@@ -6,7 +6,6 @@
 #include <arpa/inet.h>
 
 bool send_header(int sock_fd, struct header header){
-    header.type = static_cast<enum packet_type>(htons(static_cast<uint16_t>(header.type)));
     return send_data(sock_fd, &header, sizeof(header));
 }
 
@@ -29,7 +28,6 @@ struct header receive_header(int sock_fd){
     if(!receive_size(sock_fd, &header, sizeof(header))){
         return header;
     }
-    header.type = static_cast<enum packet_type>(ntohs(static_cast<uint16_t>(header.type)));
     return header;
 }
 

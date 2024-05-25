@@ -4,10 +4,10 @@
 #include <cstdint>
 #include <string>
 
-enum packet_type : uint16_t {
+enum packet_type : uint8_t {
+    JOIN,
     MESSAGE,
     QUIT,
-    JOIN,
 };
 
 struct header{
