@@ -74,7 +74,7 @@ bool handle_input(int client_fd){
     if(!send_header(client_fd, header)){
         return false;
     }
-    if(!send_message(client_fd, msg)){
+    if(should_send_message && !send_message(client_fd, msg)){
         return false;
     }
     return true;
