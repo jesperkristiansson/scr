@@ -92,7 +92,7 @@ std::vector<std::byte> Connection::receive_data(size_t size){
     return result;
 }
 
-bool Connection::receive_data(std::byte *buf, size_t &size){
+ssize_t Connection::receive_data(std::byte *buf, size_t &size){
     ssize_t bytes_received;
     bytes_received = recv(sock_fd, buf, size, 0);
     if(bytes_received == -1){
@@ -100,13 +100,11 @@ bool Connection::receive_data(std::byte *buf, size_t &size){
             std::cerr << "recv() timed out" << std::endl;
         }
         perror("receive_size: recv");
-        return false;
     } else if(bytes_received == 0){
         //stream closed
         size = 0;
-        return false;
     } else{
         size = static_cast<size_t>(bytes_received);
-        return true;
     }
+    return bytes_received;
 }
