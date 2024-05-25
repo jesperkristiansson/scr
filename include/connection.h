@@ -8,8 +8,14 @@
 
 class Connection{
     public:
-        Connection(int sock_fd);
+        explicit Connection(int sock_fd);
+        Connection(Connection &other) = delete;
+        Connection(Connection &&other);
         ~Connection();
+
+        Connection& operator=(const Connection &other) = delete;
+        Connection& operator=(Connection &&other);
+
         bool set_timeout(int ms);
         bool send_data(std::vector<std::byte> data);
         bool send_data(const void *data, size_t size);

@@ -9,13 +9,24 @@
 #include <cerrno>
 
 #include <iostream>
+#include <utility>
 
 Connection::Connection(int sock_fd) : sock_fd{sock_fd} {}
 
+Connection::Connection(Connection &&other) : sock_fd{std::exchange(other.sock_fd, -1)} {}
+
 Connection::~Connection(){
+    if(sock_fd == -1){
+        return;
+    }
     if(close(sock_fd) == -1){
         perror("~Connection: close()");
     }
+}
+
+Connection& Connection::operator=(Connection &&other){
+    std::swap(this->sock_fd, other.sock_fd);
+    return *this;
 }
 
 bool Connection::set_timeout(int ms){
