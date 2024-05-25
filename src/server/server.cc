@@ -1,8 +1,11 @@
 #include "server.h"
 #include "networking.h"
 #include "protocol.h"
+#include "message.h"
+#include "user.h"
 
 #include <iostream>
+#include <algorithm>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -31,6 +34,24 @@ void Server::run(){
     }
 }
 
+void Server::disconnect_user(User &user){
+    std::cout << "Connection closed by client " << user.get_name() << std::endl;
+    //close connection
+    int client_fd = user.get_fd();
+
+    house.remove_user(&user);
+
+    auto pollfd_match = [&](const pollfd &item){return item.fd == client_fd;};
+    auto it = std::find_if(poll_items.begin(), poll_items.end(), pollfd_match);
+    if(it == poll_items.end()){
+        std::cerr << "find_if(fd) failed" << std::endl;
+    } else{
+        poll_items.erase(it);
+    }
+
+    users.erase(client_fd);
+}
+
 //assumes non-blocking socket
 bool Server::handle_poll_event(struct pollfd& item){
     if(item.revents == 0 || item.events < 0){
@@ -38,36 +59,26 @@ bool Server::handle_poll_event(struct pollfd& item){
     }
     //std::cout << item.revents << std::endl;
     // shouldn't ever block, since poll says it has an event
-    struct header header = receive_header(item.fd);
-    switch(header.type){
-        case MESSAGE:
-            {
-                std::string msg = receive_message(item.fd);
-                std::cout << "Received message : \"" << msg << "\" from client " << item.fd << std::endl;
-                house.echo_message(item.fd, msg);
-            }
-            break;
-        case QUIT:
-            std::cout << "Connection closed by client " << item.fd << std::endl;
-            if(close(item.fd) == -1){
-                perror("close()");
-                return false;
-            }
-            house.remove_user(item.fd);
-            //leaves the item in the vector, this should be fixed
-            item.events = -1;
-            break;
-        case JOIN:
-            {
-                std::string target_room = receive_message(item.fd);
-                std::cout << "Received join request to " << target_room << " by client " << item.fd << std::endl;
-                house.move_user(item.fd, target_room);
-            }
+    User &user = users.at(item.fd);
+    ssize_t received = user.receive();
+    if(received < 0){
+        //handle error?
+        return false;
+    } else if(received == 0){
+        disconnect_user(user);
+        return true;
+    }
+
+    MessagePointer mp;
+    MessageErrorStatus status = user.get_message(mp);
+    switch(status){
+        case MessageErrorStatus::Success:
             break;
         default:
-            std::cerr << "received unknown packet type from client " << item.fd << ": " << header.type << std::endl;
-            //handle this? could reply that it was an unknown type, kill them, or ignore it
+            return true;
+            break;
     }
+    mp->dispatch(handler, user);
     return true;
 }
 
@@ -81,7 +92,15 @@ bool Server::accept_connections(){
         make_timeout(client_fd, 1000);
         struct pollfd client = {.fd = client_fd, .events = POLLIN, .revents = 0};
         poll_items.push_back(client);
-        house.add_user(client_fd);
+
+        std::string name = std::string("User") + std::to_string(client_fd);
+        auto pair = users.emplace(client_fd, User(name, client_fd));
+        if(!pair.second){
+            std::cerr << "users.emplace failed" << std::endl;
+            return false;
+        }
+        User *user = &pair.first->second;
+        house.add_user(user);
     }
 
     return true;

@@ -1,23 +1,34 @@
 #include "room.h"
 #include "protocol.h"
+#include "messages.h"
 
-bool Room::add_member(int member){
-    return members.insert(member).second;
+bool Room::add_member(User *member){
+    if(members.insert(member).second){
+        member->set_room(this);
+        return true;
+    } else{
+        return false;
+    }
 }
 
-bool Room::remove_member(int member){
-    return members.erase(member) == 1;
+bool Room::remove_member(User *member){
+    if(members.erase(member) == 1){
+        member->set_room(nullptr);
+        return true;
+    } else{
+        return false;
+    }
 }
 
-bool Room::send_message_from(std::string message, int from){
-    struct header header;
-    header.type = MESSAGE;
-    for(const auto &member_fd : members){
-        if(member_fd == from){
+bool Room::send_message_from(std::string message, User *from){
+    MessageMessage msg(message);
+    for(User *member : members){
+        if(member == from){
             continue;
         }
-        send_header(member_fd, header);
-        send_message(member_fd, message);
+        if(!member->send_message(msg)){
+            return false;
+        }
     }
     return true;
 }

@@ -1,5 +1,5 @@
 CXX = g++
-CXXFlAGS = -O2 --std=c++17 -Wall -Wextra -g -I$(INCLUDE_DIR)
+CXXFlAGS = -O3 --std=c++17 -Wall -Wextra -g -I$(INCLUDE_DIR)
 LDFlAGS =
 INCLUDE_DIR = include
 SRC_DIR = src

@@ -1,26 +1,32 @@
 #include "user.h"
 #include "messages.h"
+#include "room.h"
 
 #include <iostream>
 
-User::User(std::string name, std::string room, int sock_fd) : room{room}, username{name}, connection(sock_fd) {}
+User::User(std::string name, int sock_fd) : room{nullptr}, username{name}, connection(sock_fd) {}
 
-void User::set_room(std::string new_room){
+void User::set_room(Room *new_room){
     room = new_room;
 }
 
-bool User::receive(std::size_t bytes){
+Room *User::get_room() const{
+    return room;
+}
+
+ssize_t User::receive(std::size_t bytes){
     std::size_t pre_size = buffer.size();
     buffer.resize(pre_size + bytes);
     std::byte *recv_buf = &buffer[pre_size];
-    if(!connection.receive_data(recv_buf, bytes)){
+    ssize_t received = connection.receive_data(recv_buf, bytes);
+    if(received < 0){
         //error or closed
-        std::cerr << "receive_data returned false" << std::endl;
-        return false;
+        std::cerr << "receive_data error" << std::endl;
+        return received;
     }
 
     buffer.resize(pre_size + bytes);
-    return true;
+    return received;
 }
 
 MessageErrorStatus User::get_message(MessagePointer &mp){
@@ -29,6 +35,7 @@ MessageErrorStatus User::get_message(MessagePointer &mp){
     MessageType type;
     const std::byte *data = buffer.data();
     std::size_t size = buffer.size()*sizeof(buffer[0]);
+    std::size_t size_cpy = size;
     status = peek(data, size, type);
     if(status != MessageErrorStatus::Success){
         return status;
@@ -43,6 +50,9 @@ MessageErrorStatus User::get_message(MessagePointer &mp){
     if(status != MessageErrorStatus::Success){
         return status;
     }
+
+    //shift buffer
+    buffer.erase(buffer.begin(), buffer.begin() + size_cpy);
 
     return MessageErrorStatus::Success;
 }

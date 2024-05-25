@@ -3,8 +3,8 @@
 
 #include "message.h"
 #include "handler.h"
+#include "user.h"
 
-#include <memory>
 #include <cstdint>
 #include <arpa/inet.h>
 #include <cstring>
@@ -16,12 +16,10 @@ enum class MessageType : uint8_t{
     NUM_ELEMENTS
 };
 
-using MessagePointer = std::unique_ptr<Message>;
-
 template<typename TDerived, MessageType MType>
 class MessageBase : public Message{
 public:
-    virtual void dispatch(Handler& handler, int from) override{
+    virtual void dispatch(Handler& handler, User &from) override{
         handler.handle(dynamic_cast<TDerived&>(*this), from);
     }
 
@@ -35,7 +33,7 @@ protected:
             return MessageErrorStatus::NotEnoughData;
         }
 
-        if(*reinterpret_cast<const MessageType*>(buf) != MessageType::JoinMessage){
+        if(*reinterpret_cast<const MessageType*>(buf) != MType){
             return MessageErrorStatus::InvalidData;
         }
 
@@ -80,7 +78,7 @@ protected:
             return MessageErrorStatus::Overflow;
         }
 
-        *reinterpret_cast<MessageType*>(buf) = MessageType::JoinMessage;
+        *reinterpret_cast<MessageType*>(buf) = MType;
         buf += sizeof(MessageType);
         size -= sizeof(MessageType);
 
@@ -96,7 +94,7 @@ protected:
             return MessageErrorStatus::Overflow;
         }
 
-        *reinterpret_cast<uint16_t*>(buf) = val;
+        *reinterpret_cast<uint16_t*>(buf) = htons(val);
         buf += sizeof(uint16_t);
         size -= sizeof(uint16_t);
 
@@ -190,6 +188,9 @@ public:
 
 class MessageMessage : public MessageBase<MessageMessage, MessageType::MessageMessage>{
 public:
+    MessageMessage() {}
+    MessageMessage(const std::string &str) : msg(str) {}
+
     std::size_t size() const override{
         return sizeof(MessageType) + sizeof(uint16_t) + msg.size();
     }
@@ -243,7 +244,7 @@ public:
     std::string msg;
 };
 
-class QuitMessage : public MessageBase<QuitMessage, MessageType::MessageMessage>{
+class QuitMessage : public MessageBase<QuitMessage, MessageType::QuitMessage>{
     std::size_t size() const override{
         return sizeof(MessageType);
     }

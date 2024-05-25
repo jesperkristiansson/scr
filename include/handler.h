@@ -2,13 +2,14 @@
 #define HANDLER_H
 
 #include "message.h"
+#include "user.h"
 
 class Handler{
     public:
-        virtual void handle(JoinMessage& msg, int from) = 0;
-        virtual void handle(MessageMessage &msg, int from) = 0;
-        virtual void handle(QuitMessage &msg, int from) = 0;
-        virtual void handle(Message& msg, int from) = 0;
+        virtual void handle(JoinMessage& msg, User &from) = 0;
+        virtual void handle(MessageMessage &msg, User &from) = 0;
+        virtual void handle(QuitMessage &msg, User &from) = 0;
+        virtual void handle(Message& msg, User &from) = 0;
     protected:
         Handler() = default;
 };
