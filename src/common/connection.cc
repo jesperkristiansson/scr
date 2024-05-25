@@ -29,7 +29,7 @@ bool Connection::set_timeout(int ms){
     return true;
 }
 
-bool Connection::send_data(std::vector<unsigned char> data){
+bool Connection::send_data(std::vector<std::byte> data){
     return send_data(data.data(), data.size());
 }
 
@@ -50,11 +50,11 @@ bool Connection::send_data(const void *data, size_t size){
     return true;
 }
 
-std::vector<unsigned char> Connection::receive_data(){
+std::vector<std::byte> Connection::receive_data(){
     constexpr size_t buf_size = 1024;
-    unsigned char buf[buf_size];
+    std::byte buf[buf_size];
 
-    std::vector<unsigned char> result;
+    std::vector<std::byte> result;
 
     ssize_t bytes_received;
     do{
@@ -74,31 +74,28 @@ std::vector<unsigned char> Connection::receive_data(){
     return result;
 }
 
-std::vector<unsigned char> Connection::receive_data(size_t size){
-    std::vector<unsigned char> result;
+std::vector<std::byte> Connection::receive_data(size_t size){
+    std::vector<std::byte> result;
     result.reserve(size);
     receive_data(result.data(), size);
     return result;
 }
 
-//assumes timeout is set on socket, could be changed to use poll instead
-bool Connection::receive_data(void *buf, size_t size){
-    unsigned char *recv_buf = static_cast<unsigned char *>(buf);
-    while(size){
-        ssize_t bytes_received = recv(sock_fd, recv_buf, size, 0);
-        if(bytes_received == -1){
-            if(errno == EAGAIN || errno == EWOULDBLOCK){
-                std::cerr << "recv() timed out" << std::endl;
-            }
-            perror("receive_size: recv");
-            return false;
-        } else if(bytes_received == 0){
-            //stream closed
-            return false;
-        } else{
-            size -= static_cast<size_t>(bytes_received);
-            recv_buf += bytes_received;
+bool Connection::receive_data(std::byte *buf, size_t &size){
+    ssize_t bytes_received;
+    bytes_received = recv(sock_fd, buf, size, 0);
+    if(bytes_received == -1){
+        if(errno == EAGAIN || errno == EWOULDBLOCK){
+            std::cerr << "recv() timed out" << std::endl;
         }
+        perror("receive_size: recv");
+        return false;
+    } else if(bytes_received == 0){
+        //stream closed
+        size = 0;
+        return false;
+    } else{
+        size = static_cast<size_t>(bytes_received);
+        return true;
     }
-    return true;
 }
