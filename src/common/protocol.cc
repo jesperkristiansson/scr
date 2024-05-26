@@ -1,5 +1,4 @@
 #include "protocol.h"
-#include "networking.h"
 
 #include <iostream>
 #include <string>

@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "networking.h"
 #include "protocol.h"
 #include "connection.h"
 
