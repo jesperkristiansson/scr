@@ -1,11 +1,13 @@
 #include "utils.h"
 #include "networking.h"
 #include "protocol.h"
+#include "connection.h"
 
 #include <cstdio>
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <memory>
 
 #include <cstdint>
 #include <cstring>
@@ -35,7 +37,7 @@ constexpr struct command registered_commands[] = {
     {.command_text = "quit", .type = QUIT, .has_argument = false},
     };
 
-bool handle_input(int client_fd){
+bool handle_input(Connection &conn){
     std::string msg = read_line();
     struct header header;
     bool should_send_message = false;
@@ -71,27 +73,83 @@ bool handle_input(int client_fd){
         should_send_message = true;
     }
 
-    if(!send_header(client_fd, header)){
-        return false;
+    std::vector<std::byte> buf;
+    size_t buf_size;
+    if(should_send_message){
+        buf_size = header_size() + message_size(msg);
+        buf.resize(buf_size);
+        ssize_t written = write_header(buf.data(), buf_size, header);
+        write_message(buf.data() + written, buf_size - written, msg);
+    } else{
+        buf_size = header_size();
+        buf.resize(buf_size);
+        write_header(buf.data(), buf_size, header);
     }
-    if(should_send_message && !send_message(client_fd, msg)){
-        return false;
-    }
-    return true;
+
+    return conn.send_data(buf.data(), buf.size());
 }
 
-bool client_loop(int client_fd){
-    if(!make_timeout(client_fd, 1000)){
-        return false;
+ssize_t receive_to_buffer(Connection &conn, std::vector<std::byte> &buffer, size_t buffer_increase = 1024){
+    size_t old_size = buffer.size();
+    buffer.resize(old_size + buffer_increase);
+    ssize_t received = conn.receive_data(&buffer[old_size], buffer_increase);
+    buffer.resize(old_size + received);
+    return received;
+}
+
+int handle_buffer(std::vector<std::byte> &buffer){
+    struct header header;
+    size_t data_offset = 0;
+    ssize_t read = get_header(buffer.data(), buffer.size(), header);
+    if(read == -1){
+        std::cerr << "get_header() error" << std::endl;
+        return -1;
+    } else if(read == 0){
+        //not enough data
+        return 0;
     }
 
+    data_offset += read;
+
+    switch(header.type){
+        case MESSAGE:
+            {
+                std::string msg;
+                read = get_message(buffer.data() + data_offset, buffer.size() - data_offset, msg);
+                if(read == -1){
+                    std::cerr << "get_message() error" << std::endl;
+                    return -1;
+                } else if(read == 0){
+                    //not enough data
+                    return 0;
+                }
+                data_offset += read;
+                std::cout << "msg from server: " << msg << std::endl;
+            }
+            break;
+        case QUIT:
+            std::cout << "connection lost" << std::endl;
+            return 1;
+        default:
+            std::cout << "Unsupported message type: " << header.type << std::endl;
+            return -1;
+    }
+
+    //erase beginning of buffer
+    buffer.erase(buffer.begin(), buffer.begin() + data_offset);
+    return 0;
+}
+
+bool client_loop(Connection &conn){
     constexpr int stdin_index = 0;
     constexpr int server_index = 1;
     struct pollfd items[2];
     items[stdin_index] = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
-    items[server_index] = {.fd = client_fd, .events = POLLIN, .revents = 0};
+    items[server_index] = {.fd = conn.get_fd(), .events = POLLIN, .revents = 0};
     struct pollfd &stdin_item = items[stdin_index];
     struct pollfd &server_item = items[server_index];
+
+    std::vector<std::byte> buffer;
 
     constexpr int timeout_ms = 100;
     while(1){
@@ -101,29 +159,30 @@ bool client_loop(int client_fd){
             return false;
         } else if(num_events > 0){
             if(stdin_item.revents){
-                handle_input(client_fd);
+                handle_input(conn);
             }
             if(server_item.revents){
                 //get packet from server
-                struct header header = receive_header(client_fd);
-                if(header.type == QUIT){
-                    std::cout << "connection lost" << std::endl;
-                    close(client_fd);
-                    break;
-                } else{
-                    assert(header.type == MESSAGE);
-                    std::string msg = receive_message(client_fd);
-                    std::cout << "msg from server: " << msg << std::endl;
+                ssize_t received = receive_to_buffer(conn, buffer);
+                if(received < 0){
+                    //error
+                    std::cerr << "conn.receive error" << std::endl;
+                    return false;
+                } else if(received == 0){
+                    //connection closed
+                    return true;
                 }
 
-                // std::vector<unsigned char> data = receive_data(client_fd);
-                // std::string msg(reinterpret_cast<const char *>(data.data()), data.size());
-                // std::cout << "msg from server: " << msg << std::endl;
+                int res = handle_buffer(buffer);
+                if(res == -1){
+                    return false;
+                } else if(res == 1){
+                    break;
+                }
             }
         }
-
     }
-    return 1;
+    return true;
 }
 
 int main(int argc, char **argv){
@@ -168,10 +227,9 @@ int main(int argc, char **argv){
     }
 
     std::cout << "Connected to: " << inet_ntoa(server_sa.sin_addr) << ":" << ntohs(server_sa.sin_port) << std::endl;
+    Connection conn(client_fd);
 
-    client_loop(client_fd);
-
-    close(client_fd);
+    client_loop(conn);
 
     return EXIT_SUCCESS;
 }

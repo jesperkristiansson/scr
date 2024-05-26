@@ -25,7 +25,7 @@ ssize_t User::receive(std::size_t bytes){
         return received;
     }
 
-    buffer.resize(pre_size + bytes);
+    buffer.resize(pre_size + received);
     return received;
 }
 

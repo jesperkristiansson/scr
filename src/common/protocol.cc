@@ -4,44 +4,55 @@
 #include <iostream>
 #include <string>
 #include <arpa/inet.h>
+#include <cstring>
 
-bool send_header(int sock_fd, struct header header){
-    return send_data(sock_fd, &header, sizeof(header));
+size_t header_size() {
+    return sizeof(header);
 }
 
-bool send_message(int sock_fd, const std::string &message){
-    uint16_t n_len = htons(message.size());
-    std::cout << "sending msg_len" << std::endl;
-    if(!send_data(sock_fd, &n_len, sizeof(n_len))){
-        return false;
-    }
-    std::cout << "sending msg" << std::endl;
-    if(!send_data(sock_fd, message.data(), message.size())){
-        return false;
-    }
-    return true;
+size_t message_size(const std::string &msg){
+    return sizeof(uint16_t) + msg.size();
 }
 
-struct header receive_header(int sock_fd){
-    struct header header;
-    header.type = QUIT;
-    if(!receive_size(sock_fd, &header, sizeof(header))){
-        return header;
+ssize_t write_header(std::byte *buf, size_t size, const header &header){
+    if(size < sizeof(header)){
+        return 0;
     }
-    return header;
+    *reinterpret_cast<packet_type *>(buf) = header.type;
+    return sizeof(header);
 }
 
-std::string receive_message(int sock_fd){
-    uint16_t msg_len;
-    std::cout << "receiving msg_len" << std::endl;
-    if(!receive_size(sock_fd, &msg_len, sizeof(msg_len))){
-        return std::string();
+ssize_t write_message(std::byte *buf, size_t size, const std::string &msg){
+    if(size < sizeof(uint16_t) + msg.size()){
+        return 0;
     }
-    msg_len = ntohs(msg_len);
-    std::string msg(msg_len, '\0');
-    std::cout << "receiving msg" << std::endl;
-    if(!receive_size(sock_fd, msg.data(), msg_len)){
-        return std::string();
+    *reinterpret_cast<uint16_t*>(buf) = htons(static_cast<uint16_t>(msg.size()));
+    memcpy(buf + sizeof(uint16_t), msg.data(), msg.size());
+
+    return sizeof(uint16_t) + msg.size();
+}
+
+ssize_t get_header(const std::byte *buf, size_t size, header &header){
+    if(size < sizeof(header)){
+        return 0;
     }
-    return msg;
+    header.type = *reinterpret_cast<const packet_type *>(buf);
+    if(header.type >= packet_type::END){
+        return -1;
+    }
+    return sizeof(header);
+}
+
+ssize_t get_message(const std::byte *buf, size_t size, std::string &msg){
+    if(size < sizeof(uint16_t)){
+        return 0;
+    }
+    uint16_t msg_len = ntohs(*reinterpret_cast<const uint16_t *>(buf));
+    buf += sizeof(uint16_t);
+    size -= sizeof(uint16_t);
+    if(size < msg_len){
+        return 0;
+    }
+    msg = std::string(reinterpret_cast<const char *>(buf), msg_len);
+    return sizeof(uint16_t) + msg_len;
 }

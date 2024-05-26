@@ -3,11 +3,13 @@
 
 #include <cstdint>
 #include <string>
+#include <memory>
 
 enum packet_type : uint8_t {
     JOIN,
     MESSAGE,
     QUIT,
+    END
 };
 
 struct header{
@@ -19,10 +21,12 @@ struct message{
     char data[];
 };
 
-bool send_header(int sock_fd, struct header header);
-bool send_message(int sock_fd, const std::string &message);
+size_t header_size();
+size_t message_size(const std::string &msg);
+ssize_t write_header(std::byte *buf, size_t size, const header &header);
+ssize_t write_message(std::byte *buf, size_t size, const std::string &msg);
 
-struct header receive_header(int sock_fd);
-std::string receive_message(int sock_fd);
+ssize_t get_header(const std::byte *buf, size_t size, header &header);
+ssize_t get_message(const std::byte *buf, size_t size, std::string &msg);
 
 #endif

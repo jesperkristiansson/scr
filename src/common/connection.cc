@@ -29,17 +29,6 @@ Connection& Connection::operator=(Connection &&other){
     return *this;
 }
 
-bool Connection::set_timeout(int ms){
-    struct timeval tv;
-    tv.tv_sec = ms / 1000;
-    tv.tv_usec = (ms % 1000) * 1000;
-    if(setsockopt(sock_fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv))){
-        perror("setsockopt(TIMEOUT)");
-        return false;
-    }
-    return true;
-}
-
 bool Connection::send_data(std::vector<std::byte> data){
     return send_data(data.data(), data.size());
 }
@@ -61,38 +50,7 @@ bool Connection::send_data(const void *data, size_t size){
     return true;
 }
 
-std::vector<std::byte> Connection::receive_data(){
-    constexpr size_t buf_size = 1024;
-    std::byte buf[buf_size];
-
-    std::vector<std::byte> result;
-
-    ssize_t bytes_received;
-    do{
-        bytes_received = recv(sock_fd, buf, buf_size, 0);
-        if(bytes_received == -1){
-            if(errno == EAGAIN || errno == EWOULDBLOCK){
-                break;
-            }
-            perror("recv");
-            return result;
-        } else if(bytes_received == 0){
-            //stream closed
-        } else{
-            result.insert(result.end(), buf, buf + bytes_received);
-        }
-    } while(bytes_received);
-    return result;
-}
-
-std::vector<std::byte> Connection::receive_data(size_t size){
-    std::vector<std::byte> result;
-    result.reserve(size);
-    receive_data(result.data(), size);
-    return result;
-}
-
-ssize_t Connection::receive_data(std::byte *buf, size_t &size){
+ssize_t Connection::receive_data(std::byte *buf, size_t size){
     ssize_t bytes_received;
     bytes_received = recv(sock_fd, buf, size, 0);
     if(bytes_received == -1){
@@ -100,11 +58,6 @@ ssize_t Connection::receive_data(std::byte *buf, size_t &size){
             std::cerr << "recv() timed out" << std::endl;
         }
         perror("receive_size: recv");
-    } else if(bytes_received == 0){
-        //stream closed
-        size = 0;
-    } else{
-        size = static_cast<size_t>(bytes_received);
     }
     return bytes_received;
 }
