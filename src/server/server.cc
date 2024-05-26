@@ -89,7 +89,6 @@ bool Server::accept_connections(){
             return false;
         }
 
-        make_timeout(client_fd, 1000);
         struct pollfd client = {.fd = client_fd, .events = POLLIN, .revents = 0};
         poll_items.push_back(client);
 
