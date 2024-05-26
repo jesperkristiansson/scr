@@ -3,9 +3,11 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <cstring>
 #include <cerrno>
 
 #include <iostream>
@@ -60,4 +62,28 @@ ssize_t Connection::receive_data(std::byte *buf, size_t size){
         perror("receive_size: recv");
     }
     return bytes_received;
+}
+
+Connection Connection::connect(const char *ip, uint16_t port){
+    int client_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if(client_fd == -1){
+        perror("socket()");
+        return Connection(-1);
+    }
+
+    struct sockaddr_in server_sa;
+    memset(&server_sa, 0, sizeof(server_sa));
+    server_sa.sin_family = AF_INET;
+    server_sa.sin_port = htons(port);
+    if(inet_aton(ip, &server_sa.sin_addr) == 0){
+        std::cerr << "inet_aton()" << std::endl;
+        return Connection(-1);
+    }
+
+    if(::connect(client_fd, (struct sockaddr *)&server_sa, sizeof(server_sa)) == -1){
+        perror("connect()");
+        return Connection(-1);
+    }
+
+    return Connection(client_fd);
 }

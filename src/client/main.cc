@@ -11,12 +11,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cassert>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <poll.h>
 
 inline std::string read_line(){
@@ -204,29 +199,11 @@ int main(int argc, char **argv){
     }
     port = (uint16_t)port_int;
 
-    std::cout << "Client connecting to " << ip << ":" << port << std::endl;
-
-    int client_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(client_fd == -1){
-        perror("socket()");
-        exit(EXIT_FAILURE);
+    std::cout << "Connecting to " << ip << ":" << port << std::endl;
+    Connection conn = Connection::connect(ip, port);
+    if(!conn.valid()){
+        return EXIT_FAILURE;
     }
-
-    struct sockaddr_in server_sa;
-    memset(&server_sa, 0, sizeof(server_sa));
-    server_sa.sin_family = AF_INET;
-    server_sa.sin_port = htons(port);
-    if(inet_aton(ip, &server_sa.sin_addr) == 0){  //right?
-        FAIL("inet_aton()");
-    }
-
-    if(connect(client_fd, (struct sockaddr *)&server_sa, sizeof(server_sa)) == -1){
-        perror("connect()");
-        exit(EXIT_FAILURE);
-    }
-
-    std::cout << "Connected to: " << inet_ntoa(server_sa.sin_addr) << ":" << ntohs(server_sa.sin_port) << std::endl;
-    Connection conn(client_fd);
 
     client_loop(conn);
 
