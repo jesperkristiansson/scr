@@ -29,12 +29,16 @@ public:
     }
 
 protected:
-    MessageErrorStatus readType(const std::byte *&buf, std::size_t &size){
+    static MessageType type(){
+        return MType;
+    }
+
+    static MessageErrorStatus readType(const std::byte *&buf, std::size_t &size, MessageType expected_type){
         if(size < sizeof(MessageType)){
             return MessageErrorStatus::NotEnoughData;
         }
 
-        if(*reinterpret_cast<const MessageType*>(buf) != MType){
+        if(*reinterpret_cast<const MessageType*>(buf) != expected_type){
             return MessageErrorStatus::InvalidData;
         }
 
@@ -44,7 +48,7 @@ protected:
         return MessageErrorStatus::Success;
     }
 
-    MessageErrorStatus readUInt16(const std::byte *&buf, std::size_t &size, uint16_t &val_res){
+    static MessageErrorStatus readUInt16(const std::byte *&buf, std::size_t &size, uint16_t &val_res){
         if(size < sizeof(val_res)){
             return MessageErrorStatus::NotEnoughData;
         }
@@ -55,7 +59,7 @@ protected:
         return MessageErrorStatus::Success;
     }
 
-    MessageErrorStatus readString(const std::byte *&buf, std::size_t &size, std::string &str){
+    static MessageErrorStatus readString(const std::byte *&buf, std::size_t &size, std::string &str){
         MessageErrorStatus res;
 
         uint16_t str_size;
@@ -74,19 +78,19 @@ protected:
         return MessageErrorStatus::Success;
     }
 
-    MessageErrorStatus writeType(std::byte *&buf, std::size_t &size) const {
+    static MessageErrorStatus writeType(std::byte *&buf, std::size_t &size, MessageType type){
         if(size < sizeof(MessageType)){
             return MessageErrorStatus::Overflow;
         }
 
-        *reinterpret_cast<MessageType*>(buf) = MType;
+        *reinterpret_cast<MessageType*>(buf) = type;
         buf += sizeof(MessageType);
         size -= sizeof(MessageType);
 
         return MessageErrorStatus::Success;
     }
 
-    MessageErrorStatus writeUInt16(std::byte *&buf, std::size_t &size, uint16_t val) const {
+    static MessageErrorStatus writeUInt16(std::byte *&buf, std::size_t &size, uint16_t val){
         if(size < sizeof(val)){
             return MessageErrorStatus::Overflow;
         }
@@ -102,7 +106,7 @@ protected:
         return MessageErrorStatus::Success;
     }
 
-    MessageErrorStatus writeBuffer(std::byte *&buf, std::size_t &size, const void *in_buf, std::size_t in_size) const {
+    static MessageErrorStatus writeBuffer(std::byte *&buf, std::size_t &size, const void *in_buf, std::size_t in_size){
         if(size < in_size){
             return MessageErrorStatus::Overflow;
         }
@@ -114,7 +118,7 @@ protected:
         return MessageErrorStatus::Success;
     }
 
-    MessageErrorStatus writeString(std::byte *&buf, std::size_t &size, const std::string &str) const {
+    static MessageErrorStatus writeString(std::byte *&buf, std::size_t &size, const std::string &str){
         MessageErrorStatus res;
 
         res = writeUInt16(buf, size, static_cast<uint16_t>(str.size()));
@@ -144,7 +148,7 @@ public:
         MessageErrorStatus res;
 
         //verify type
-        res = readType(_buf, _size);
+        res = readType(_buf, _size, type());
         if(res != MessageErrorStatus::Success){
             return res;
         }
@@ -168,7 +172,7 @@ public:
         MessageErrorStatus res;
 
         //verify validity
-        res = writeType(_buf, _size);
+        res = writeType(_buf, _size, type());
         if(res != MessageErrorStatus::Success){
             return res;
         }
@@ -203,7 +207,7 @@ public:
         MessageErrorStatus res;
 
         //verify type
-        res = readType(_buf, _size);
+        res = readType(_buf, _size, type());
         if(res != MessageErrorStatus::Success){
             return res;
         }
@@ -227,7 +231,7 @@ public:
         MessageErrorStatus res;
 
         //verify validity
-        res = writeType(_buf, _size);
+        res = writeType(_buf, _size, type());
         if(res != MessageErrorStatus::Success){
             return res;
         }
@@ -257,7 +261,7 @@ class QuitMessage : public MessageBase<QuitMessage, MessageType::QuitMessage>{
         MessageErrorStatus res;
 
         //verify type
-        res = readType(_buf, _size);
+        res = readType(_buf, _size, type());
         if(res != MessageErrorStatus::Success){
             return res;
         }
@@ -275,7 +279,7 @@ class QuitMessage : public MessageBase<QuitMessage, MessageType::QuitMessage>{
         MessageErrorStatus res;
 
         //verify validity
-        res = writeType(_buf, _size);
+        res = writeType(_buf, _size, type());
         if(res != MessageErrorStatus::Success){
             return res;
         }
