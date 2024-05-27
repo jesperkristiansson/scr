@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <arpa/inet.h>
 #include <cstring>
+#include <limits>
 
 enum class MessageType : uint8_t{
     JoinMessage,

@@ -18,7 +18,7 @@ struct header{
 
 struct message{
     uint16_t len;   //max size of packet is 2^16 - 1 = 65535 bytes.
-    char data[];
+    char data[];    //disallowed in ISO C++, ignore warnings about this until this file can be replaced by the message system
 };
 
 size_t header_size();

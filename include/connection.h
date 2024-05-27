@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <sys/types.h>
 
 class Connection{
     public:
