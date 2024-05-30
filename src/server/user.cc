@@ -71,7 +71,7 @@ bool User::send_message(const Message &message){
         ret = false;
     }
 
-    delete buf;
+    delete[] buf;
 
     return ret;
 }
