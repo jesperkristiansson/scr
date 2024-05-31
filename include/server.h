@@ -5,20 +5,32 @@
 #include "message.h"
 #include "handler.h"
 #include "user.h"
+#include "serverSocket.h"
 
+#include <variant>
 #include <cstdint>
 #include <vector>
+#include <utility>
 #include <poll.h>
 #include <unordered_map>
 
 class Server{
 public:
-    Server(int server_fd) : server_fd{server_fd}, poll_items{}, house{}, handler(*this) {}
     ~Server();
+    Server(Server &other) = delete;
+    Server(Server &&other) = default;
+
+    Server& operator=(const Server &other) = delete;
+    Server& operator=(Server &&other) = default;
+
+    static std::variant<Server, int> create(uint16_t port);
+
     void run();
 
 private:
-    int server_fd;
+    Server(ServerSocket sock) : sock(std::move(sock)), poll_items{}, house{}, handler(*this) {}
+
+    ServerSocket sock;
     std::vector<struct pollfd> poll_items;
     House house;
     std::unordered_map<int, User> users;

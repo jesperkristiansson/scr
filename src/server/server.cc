@@ -1,22 +1,28 @@
 #include "server.h"
-#include "networking.h"
 #include "protocol.h"
 #include "message.h"
 #include "user.h"
 
 #include <iostream>
 #include <algorithm>
+#include <utility>
 #include <stdio.h>
 #include <unistd.h>
 
-Server::~Server(){
-    if(close(server_fd) == -1){
-        perror("close(server_fd)");
+std::variant<Server, int> Server::create(uint16_t port){
+    auto res = ServerSocket::create(port);
+    //error returned
+    if(res.index() != 0){
+        std::cerr << "error creating ServerSocket" << std::endl;
+        return std::get<1>(res);
     }
+    return Server(std::move(std::get<0>(res)));
 }
 
+Server::~Server(){}
+
 void Server::run(){
-    if(!make_nonblocking(server_fd)){
+    if(!sock.make_nonblocking()){
         return;
     }
     constexpr int timeout_ms = 100;
@@ -84,7 +90,7 @@ bool Server::handle_poll_event(struct pollfd& item){
 
 bool Server::accept_connections(){
     while(1){
-        int client_fd = accept_connection(server_fd);
+        int client_fd = sock.accept_connection();
         if(client_fd < 0){
             return false;
         }

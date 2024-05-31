@@ -1,8 +1,9 @@
 #include "utils.h"
 #include "server.h"
-#include "networking.h"
 
 #include <iostream>
+#include <variant>
+#include <utility>
 
 #include <cstdint>
 #include <cassert>
@@ -25,12 +26,13 @@ int main(int argc, char **argv){
     }
     port = (uint16_t)port_int;
 
-    int server_fd = create_listening_socket(port);
-    if(server_fd == -1){
-        return EXIT_FAILURE;
+    auto res = Server::create(port);
+    if(res.index() != 0){
+        std::cerr << "error creating Server" << std::endl;
+        return EXIT_SUCCESS;
     }
 
-    Server server(server_fd);
+    Server server = std::move(std::get<0>(res));
     server.run();
 
     return EXIT_SUCCESS;

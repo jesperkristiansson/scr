@@ -1,4 +1,4 @@
-#include "networking.h"
+#include "serverSocket.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -10,8 +10,27 @@
 #include <cerrno>
 
 #include <iostream>
+#include <utility>
 
-int create_listening_socket(uint16_t port){
+
+ServerSocket::~ServerSocket(){
+    if(sock_fd == -1){
+        return;
+    }
+    if(close(sock_fd) == -1){
+        perror("close(server_fd)");
+    }
+}
+
+ServerSocket::ServerSocket(ServerSocket &&other) : sock_fd{std::exchange(other.sock_fd, -1)} {}
+
+ServerSocket& ServerSocket::operator=(ServerSocket &&other){
+    std::swap(this->sock_fd, other.sock_fd);
+    return *this;
+}
+
+
+std::variant<ServerSocket, int> ServerSocket::create(uint16_t port){
     int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if(sock_fd == -1){
         perror("socket()");
@@ -40,10 +59,10 @@ int create_listening_socket(uint16_t port){
         return -1;
     }
 
-    return sock_fd;
+    return ServerSocket(sock_fd);
 }
 
-int accept_connection(int sock_fd){
+int ServerSocket::accept_connection(){
     struct sockaddr_in sa;
     socklen_t sa_len = sizeof(sa);
     int fd = accept(sock_fd, (struct sockaddr *)&sa, &sa_len);
@@ -60,12 +79,12 @@ int accept_connection(int sock_fd){
     return fd;
 }
 
-bool make_nonblocking(int fd){
-    int flags = fcntl(fd, F_GETFL);
+bool ServerSocket::make_nonblocking(){
+    int flags = fcntl(sock_fd, F_GETFL);
     if(flags == -1){
         perror("fcntl(F_GETFL)");
         return false;
     }
     flags |= O_NONBLOCK;
-    return fcntl(fd, F_SETFL, flags) == 0;
+    return fcntl(sock_fd, F_SETFL, flags) == 0;
 }
