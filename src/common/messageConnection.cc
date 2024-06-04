@@ -1,5 +1,5 @@
-#include "messageConnection.h"
-#include "messages.h"
+#include "common/messageConnection.h"
+#include "common/messages.h"
 
 #include <iostream>
 

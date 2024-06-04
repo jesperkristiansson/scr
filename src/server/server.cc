@@ -1,7 +1,7 @@
-#include "server.h"
-#include "protocol.h"
-#include "message.h"
-#include "user.h"
+#include "server/server.h"
+#include "server/user.h"
+
+#include "common/message.h"
 
 #include <iostream>
 #include <algorithm>

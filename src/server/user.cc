@@ -1,4 +1,4 @@
-#include "user.h"
+#include "server/user.h"
 
 User::User(std::string name, int sock_fd) : room{nullptr}, username{name}, msgConn(sock_fd) {}
 

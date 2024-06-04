@@ -2,7 +2,6 @@
 #define CONNECTION_H
 
 #include <vector>
-
 #include <cstddef>
 #include <memory>
 #include <sys/types.h>

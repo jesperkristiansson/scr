@@ -1,4 +1,4 @@
-#include "house.h"
+#include "server/house.h"
 
 #include <iostream>
 

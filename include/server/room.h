@@ -1,7 +1,7 @@
 #ifndef ROOM_H
 #define ROOM_H
 
-#include "user.h"
+#include "server/user.h"
 
 #include <unordered_set>
 #include <string>

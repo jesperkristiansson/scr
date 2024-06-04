@@ -1,7 +1,8 @@
-#include "server.h"
-#include "handler.h"
-#include "message.h"
-#include "messages.h"
+#include "server/server.h"
+
+#include "common/handler.h"
+#include "common/message.h"
+#include "common/messages.h"
 
 #include <iostream>
 #include <unistd.h>

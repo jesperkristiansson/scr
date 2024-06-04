@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "common/connection.h"
 
 #include <sys/time.h>
 #include <sys/types.h>

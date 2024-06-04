@@ -1,8 +1,8 @@
 #ifndef MESSAGE_CONNECTION_H
 #define MESSAGE_CONNECTION_H
 
-#include "connection.h"
-#include "message.h"
+#include "common/connection.h"
+#include "common/message.h"
 
 #include <memory>
 #include <vector>

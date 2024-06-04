@@ -1,6 +1,6 @@
-#include "utils.h"
-#include "protocol.h"
-#include "connection.h"
+#include "common/utils.h"
+#include "common/protocol.h"
+#include "common/connection.h"
 
 #include <cstdio>
 #include <iostream>

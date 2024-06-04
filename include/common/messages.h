@@ -1,9 +1,8 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
-#include "message.h"
-#include "handler.h"
-#include "user.h"
+#include "common/message.h"
+#include "common/handler.h"
 
 #include <cstdint>
 #include <arpa/inet.h>

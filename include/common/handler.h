@@ -1,8 +1,7 @@
 #ifndef HANDLER_H
 #define HANDLER_H
 
-#include "message.h"
-#include "user.h"
+#include "common/message.h"
 
 class Handler{
     public:

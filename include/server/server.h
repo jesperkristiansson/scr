@@ -1,11 +1,12 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "house.h"
-#include "message.h"
-#include "handler.h"
-#include "user.h"
-#include "serverSocket.h"
+#include "server/house.h"
+#include "server/user.h"
+#include "server/serverSocket.h"
+
+#include "common/message.h"
+#include "common/handler.h"
 
 #include <variant>
 #include <cstdint>

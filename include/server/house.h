@@ -1,8 +1,8 @@
 #ifndef HOUSE_H
 #define HOUSE_H
 
-#include "room.h"
-#include "user.h"
+#include "server/room.h"
+#include "server/user.h"
 
 #include <unordered_map>
 

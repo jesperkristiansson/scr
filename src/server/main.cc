@@ -1,5 +1,5 @@
-#include "utils.h"
-#include "server.h"
+#include "server/server.h"
+#include "common/utils.h"
 
 #include <iostream>
 #include <variant>
