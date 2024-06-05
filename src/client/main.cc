@@ -2,7 +2,7 @@
 #include "client/stringToMessage.h"
 
 #include "common/utils.h"
-#include "common/messages.h"
+#include "common/clientMessages.h"
 
 #include <cstdio>
 #include <iostream>

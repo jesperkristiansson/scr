@@ -3,7 +3,7 @@
 
 #include "common/handler.h"
 #include "common/clientMessage.h"
-#include "common/messages.h"
+#include "common/clientMessages.h"
 
 #include <iostream>
 #include <unistd.h>

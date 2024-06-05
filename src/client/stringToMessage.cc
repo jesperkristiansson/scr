@@ -1,6 +1,6 @@
 #include "client/stringToMessage.h"
 
-#include "common/messages.h"
+#include "common/clientMessages.h"
 
 #include <iostream>
 #include <sstream>

@@ -4,7 +4,7 @@
 #include "server/user.h"
 
 #include "common/handler.h"
-#include "common/messages.h"
+#include "common/clientMessages.h"
 
 class Server;
 

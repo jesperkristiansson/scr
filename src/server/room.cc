@@ -1,6 +1,6 @@
 #include "server/room.h"
 
-#include "common/messages.h"
+#include "common/clientMessages.h"
 
 bool Room::add_member(User *member){
     if(members.insert(member).second){
