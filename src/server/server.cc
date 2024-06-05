@@ -19,6 +19,21 @@ std::variant<Server, int> Server::create(uint16_t port){
     return Server(std::move(std::get<0>(res)));
 }
 
+
+Server::Server(Server &&other) :
+    sock(std::move(other.sock)),
+    poll_items(std::move(other.poll_items)),
+    house(std::move(other.house)),
+    handler(this)
+    {}
+
+Server& Server::operator=(Server &&other){
+    this->sock = std::move(other.sock);
+    this->poll_items = std::move(other.poll_items);
+    this->house = std::move(other.house);
+    return *this;
+}
+
 Server::~Server(){}
 
 void Server::run(){

@@ -19,17 +19,17 @@ class Server{
 public:
     ~Server();
     Server(Server &other) = delete;
-    Server(Server &&other) = default;
+    Server(Server &&other);
 
     Server& operator=(const Server &other) = delete;
-    Server& operator=(Server &&other) = default;
+    Server& operator=(Server &&other);
 
     static std::variant<Server, int> create(uint16_t port);
 
     void run();
 
 private:
-    Server(ServerSocket sock) : sock(std::move(sock)), poll_items{}, house{}, handler(*this) {}
+    Server(ServerSocket &&sock) : sock(std::move(sock)), poll_items{}, house{}, handler(this) {}
 
     ServerSocket sock;
     std::vector<struct pollfd> poll_items;
@@ -39,13 +39,14 @@ private:
     //inner class
     class ServerHandler : public Handler{
     public:
-        ServerHandler(Server& s) : server{s} {}
+        ServerHandler(Server *s) : server{s} {}
+        void setServer(Server *s){server = s;}
         void handle(JoinMessage& msg, User &from);
         void handle(MessageMessage &msg, User &from);
         void handle(QuitMessage &msg, User &from);
         void handle(Message& msg, User &from);
     private:
-        Server& server;
+        Server *server;
     };
     ServerHandler handler;
 
