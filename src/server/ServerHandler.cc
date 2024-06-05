@@ -2,7 +2,7 @@
 #include "server/server.h"
 
 #include "common/handler.h"
-#include "common/message.h"
+#include "common/clientMessage.h"
 #include "common/messages.h"
 
 #include <iostream>

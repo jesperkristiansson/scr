@@ -1,7 +1,7 @@
 #ifndef USER_H
 #define USER_H
 
-#include "common/message.h"
+#include "common/clientMessage.h"
 #include "common/messageConnection.h"
 
 #include <string>

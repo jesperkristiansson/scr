@@ -1,7 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "common/message.h"
+#include "common/clientMessage.h"
 #include "common/messageConnection.h"
 
 #include <memory>

@@ -1,7 +1,7 @@
-#ifndef MESSAGES_H
-#define MESSAGES_H
+#ifndef CLIENT_MESSAGES_H
+#define CLIENT_MESSAGES_H
 
-#include "common/message.h"
+#include "common/clientMessage.h"
 #include "common/handler.h"
 
 #include <cstdint>

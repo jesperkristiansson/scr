@@ -1,5 +1,5 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#ifndef CLIENT_MESSAGE_H
+#define CLIENT_MESSAGE_H
 
 #include <string>
 #include <cstddef>

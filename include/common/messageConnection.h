@@ -2,7 +2,7 @@
 #define MESSAGE_CONNECTION_H
 
 #include "common/connection.h"
-#include "common/message.h"
+#include "common/clientMessage.h"
 
 #include <memory>
 #include <vector>

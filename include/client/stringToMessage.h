@@ -1,7 +1,7 @@
 #ifndef STRING_TO_MESSAGE_H
 #define STRING_TO_MESSAGE_H
 
-#include "common/message.h"
+#include "common/clientMessage.h"
 
 #include <string>
 

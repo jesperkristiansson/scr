@@ -6,7 +6,7 @@
 #include "server/serverSocket.h"
 #include "server/serverHandler.h"
 
-#include "common/message.h"
+#include "common/clientMessage.h"
 
 #include <variant>
 #include <cstdint>
