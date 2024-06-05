@@ -136,6 +136,9 @@ protected:
 
 class JoinMessage : public MessageBase<JoinMessage, MessageType::JoinMessage>{
 public:
+    JoinMessage() {}
+    JoinMessage(const std::string &str) : room_name(str) {}
+
     std::size_t size() const override{
         return sizeof(MessageType) + sizeof(uint16_t) + room_name.size();
     }

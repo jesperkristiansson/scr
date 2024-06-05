@@ -1,6 +1,8 @@
+#include "client/server.h"
+#include "client/stringToMessage.h"
+
 #include "common/utils.h"
-#include "common/protocol.h"
-#include "common/connection.h"
+#include "common/messages.h"
 
 #include <cstdio>
 #include <iostream>
@@ -20,126 +22,36 @@ inline std::string read_line(){
     return line;
 }
 
-struct command{
-    const char *command_text;
-    enum packet_type type;
-    bool has_argument;
-};
-
-constexpr struct command registered_commands[] = {
-    {.command_text = "join", .type = JOIN, .has_argument = true},
-    {.command_text = "quit", .type = QUIT, .has_argument = false},
-    };
-
-bool handle_input(Connection &conn){
-    std::string msg = read_line();
-    struct header header;
-    bool should_send_message = false;
-    if(msg.size() && msg[0] == '/'){    //is a command
-        std::stringstream ss(msg);
-        std::string command;
-        ss >> command;
-
-        bool command_found = false;
-        for(struct command registered_command : registered_commands){
-            if(command.compare(1, std::string::npos, registered_command.command_text) == 0){
-                //do command
-                header.type = registered_command.type;
-                should_send_message = registered_command.has_argument;
-                command_found = true;
-                break;
-            }
-        }
-        if(!command_found){
-            std::cerr << "command \"" << command << "\" does not exist" << std::endl;
-            return false;
-        }
-
-        if(should_send_message){
-            ss >> msg;
-            if(ss.fail()){
-                std::cerr << "command \"" << command << "\" requires an argument" << std::endl;
-                return false;
-            }
-        }
-    } else{
-        header.type = MESSAGE;
-        should_send_message = true;
+bool handle_input(Server &server){
+    std::string line = read_line();
+    MessagePointer msgPtr = string_to_message(line);
+    if(!msgPtr){
+        std::cerr << "string_to_message returned nullptr" << std::endl;
     }
 
-    std::vector<std::byte> buf;
-    size_t buf_size;
-    if(should_send_message){
-        buf_size = header_size() + message_size(msg);
-        buf.resize(buf_size);
-        ssize_t written = write_header(buf.data(), buf_size, header);
-        write_message(buf.data() + written, buf_size - written, msg);
+    return server.send_message(*msgPtr);
+}
+
+int handle_message(const Message *msg){
+    if(dynamic_cast<const MessageMessage *>(msg)){
+        std::cout << "msg from server: " << dynamic_cast<const MessageMessage *>(msg)->msg << std::endl;
+    } else if(dynamic_cast<const QuitMessage *>(msg)){
+        std::cout << "connection lost" << std::endl;
+        return 1;
     } else{
-        buf_size = header_size();
-        buf.resize(buf_size);
-        write_header(buf.data(), buf_size, header);
-    }
-
-    return conn.send_data(buf.data(), buf.size());
-}
-
-ssize_t receive_to_buffer(Connection &conn, std::vector<std::byte> &buffer, size_t buffer_increase = 1024){
-    size_t old_size = buffer.size();
-    buffer.resize(old_size + buffer_increase);
-    ssize_t received = conn.receive_data(&buffer[old_size], buffer_increase);
-    buffer.resize(old_size + received);
-    return received;
-}
-
-int handle_buffer(std::vector<std::byte> &buffer){
-    struct header header;
-    size_t data_offset = 0;
-    ssize_t read = get_header(buffer.data(), buffer.size(), header);
-    if(read == -1){
-        std::cerr << "get_header() error" << std::endl;
+        std::cerr << "handle_message: unrecognized message" << std::endl;
         return -1;
-    } else if(read == 0){
-        //not enough data
-        return 0;
     }
 
-    data_offset += read;
-
-    switch(header.type){
-        case MESSAGE:
-            {
-                std::string msg;
-                read = get_message(buffer.data() + data_offset, buffer.size() - data_offset, msg);
-                if(read == -1){
-                    std::cerr << "get_message() error" << std::endl;
-                    return -1;
-                } else if(read == 0){
-                    //not enough data
-                    return 0;
-                }
-                data_offset += read;
-                std::cout << "msg from server: " << msg << std::endl;
-            }
-            break;
-        case QUIT:
-            std::cout << "connection lost" << std::endl;
-            return 1;
-        default:
-            std::cout << "Unsupported message type: " << header.type << std::endl;
-            return -1;
-    }
-
-    //erase beginning of buffer
-    buffer.erase(buffer.begin(), buffer.begin() + data_offset);
     return 0;
 }
 
-bool client_loop(Connection &conn){
+bool client_loop(Server &server){
     constexpr int stdin_index = 0;
     constexpr int server_index = 1;
     struct pollfd items[2];
     items[stdin_index] = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
-    items[server_index] = {.fd = conn.get_fd(), .events = POLLIN, .revents = 0};
+    items[server_index] = {.fd = server.get_fd(), .events = POLLIN, .revents = 0};
     struct pollfd &stdin_item = items[stdin_index];
     struct pollfd &server_item = items[server_index];
 
@@ -153,21 +65,31 @@ bool client_loop(Connection &conn){
             return false;
         } else if(num_events > 0){
             if(stdin_item.revents){
-                handle_input(conn);
+                handle_input(server);
             }
             if(server_item.revents){
                 //get packet from server
-                ssize_t received = receive_to_buffer(conn, buffer);
+                ssize_t received = server.receive();
                 if(received < 0){
                     //error
-                    std::cerr << "conn.receive error" << std::endl;
+                    std::cerr << "server.receive error" << std::endl;
                     return false;
                 } else if(received == 0){
                     //connection closed
                     return true;
                 }
 
-                int res = handle_buffer(buffer);
+                MessagePointer mp;
+                MessageErrorStatus status = server.get_message(mp);
+                switch(status){
+                    case MessageErrorStatus::Success:
+                        break;
+                    default:
+                        return true;
+                        break;
+                }
+
+                int res = handle_message(mp.get());
                 if(res == -1){
                     return false;
                 } else if(res == 1){
@@ -200,12 +122,12 @@ int main(int argc, char **argv){
     port = (uint16_t)port_int;
 
     std::cout << "Connecting to " << ip << ":" << port << std::endl;
-    Connection conn = Connection::connect(ip, port);
-    if(!conn.valid()){
+    Server server = Server::connect(ip, port);
+    if(!server.valid()){
         return EXIT_FAILURE;
     }
 
-    client_loop(conn);
+    client_loop(server);
 
     return EXIT_SUCCESS;
 }
