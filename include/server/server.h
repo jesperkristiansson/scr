@@ -4,9 +4,9 @@
 #include "server/house.h"
 #include "server/user.h"
 #include "server/serverSocket.h"
+#include "server/serverHandler.h"
 
 #include "common/message.h"
-#include "common/handler.h"
 
 #include <variant>
 #include <cstdint>
@@ -16,6 +16,7 @@
 #include <unordered_map>
 
 class Server{
+    friend class ServerHandler;
 public:
     ~Server();
     Server(Server &other) = delete;
@@ -36,18 +37,6 @@ private:
     House house;
     std::unordered_map<int, User> users;
 
-    //inner class
-    class ServerHandler : public Handler{
-    public:
-        ServerHandler(Server *s) : server{s} {}
-        void setServer(Server *s){server = s;}
-        void handle(JoinMessage& msg, User &from);
-        void handle(MessageMessage &msg, User &from);
-        void handle(QuitMessage &msg, User &from);
-        void handle(Message& msg, User &from);
-    private:
-        Server *server;
-    };
     ServerHandler handler;
 
     void disconnect_user(User &from);
