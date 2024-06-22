@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <memory>
 
-enum class MessageType : uint8_t{
+enum class ClientMessageType : uint8_t{
     JoinMessage,
     MessageMessage,
     QuitMessage,
@@ -15,7 +15,7 @@ enum class MessageType : uint8_t{
 
 class User;
 
-class ClientMessage : public Message<MessageType, User>{
+class ClientMessage : public Message<ClientMessageType, User>{
 public:
     using MessagePointer = std::unique_ptr<ClientMessage>;
 

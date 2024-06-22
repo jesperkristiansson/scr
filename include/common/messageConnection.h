@@ -46,7 +46,7 @@ template<typename TSendMessage, typename TRecvMessage>
 MessageErrorStatus MessageConnection<TSendMessage, TRecvMessage>::get_message(typename TRecvMessage::MessagePointer &mp){
     MessageErrorStatus status;
 
-    MessageType type;
+    typename TRecvMessage::MessageType type;
     const std::byte *data = buffer.data();
     std::size_t size = buffer.size()*sizeof(buffer[0]);
     std::size_t size_cpy = size;

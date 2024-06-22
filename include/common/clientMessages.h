@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <limits>
 
-template<typename TDerived, MessageType MType>
+template<typename TDerived, ClientMessage::MessageType MType>
 class MessageBase : public ClientMessage{
 public:
     virtual void dispatch(MessageHandler& handler, User &from) override{
@@ -24,7 +24,7 @@ protected:
     }
 };
 
-class JoinMessage : public MessageBase<JoinMessage, MessageType::JoinMessage>{
+class JoinMessage : public MessageBase<JoinMessage, ClientMessage::MessageType::JoinMessage>{
 public:
     JoinMessage() {}
     JoinMessage(const std::string &str) : room_name(str) {}
@@ -83,7 +83,7 @@ public:
     std::string room_name;
 };
 
-class MessageMessage : public MessageBase<MessageMessage, MessageType::MessageMessage>{
+class MessageMessage : public MessageBase<MessageMessage, ClientMessage::MessageType::MessageMessage>{
 public:
     MessageMessage() {}
     MessageMessage(const std::string &str) : msg(str) {}
@@ -141,7 +141,7 @@ public:
     std::string msg;
 };
 
-class QuitMessage : public MessageBase<QuitMessage, MessageType::QuitMessage>{
+class QuitMessage : public MessageBase<QuitMessage, ClientMessage::MessageType::QuitMessage>{
     std::size_t size() const override{
         return sizeof(MessageType);
     }
