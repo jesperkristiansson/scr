@@ -18,7 +18,7 @@ class MessageConnection{
         bool valid() const {return connection.valid();}
         int get_fd() const {return connection.get_fd();}
         ssize_t receive(std::size_t bytes = 1024);
-        MessageErrorStatus get_message(std::unique_ptr<TRecvMessage> &mp);
+        MessageErrorStatus get_message(typename TRecvMessage::MessagePointer &mp);
         bool send_message(const TSendMessage& message);
     private:
         MessageConnection(Connection &&conn) : connection(std::move(conn)) {}
@@ -43,7 +43,7 @@ ssize_t MessageConnection<TSendMessage, TRecvMessage>::receive(std::size_t bytes
 }
 
 template<typename TSendMessage, typename TRecvMessage>
-MessageErrorStatus MessageConnection<TSendMessage, TRecvMessage>::get_message(std::unique_ptr<TRecvMessage> &mp){
+MessageErrorStatus MessageConnection<TSendMessage, TRecvMessage>::get_message(typename TRecvMessage::MessagePointer &mp){
     MessageErrorStatus status;
 
     MessageType type;
