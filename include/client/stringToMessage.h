@@ -5,6 +5,6 @@
 
 #include <string>
 
-MessagePointer string_to_message(const std::string &string);
+Message::MessagePointer string_to_message(const std::string &string);
 
 #endif

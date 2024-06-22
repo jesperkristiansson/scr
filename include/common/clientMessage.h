@@ -26,8 +26,6 @@ public:
     static MessagePointer CreateMessage(const std::byte *buf, std::size_t size);
 };
 
-using MessagePointer = std::unique_ptr<Message>;
-
 class JoinMessage;
 class MessageMessage;
 class QuitMessage;

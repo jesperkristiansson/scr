@@ -17,7 +17,7 @@ class User{
         std::string get_name() const {return username;}
         int get_fd() const {return msgConn.get_fd();}
         ssize_t receive(std::size_t bytes = 1024);
-        MessageErrorStatus get_message(MessagePointer &mp);
+        MessageErrorStatus get_message(Message::MessagePointer &mp);
         bool send_message(const Message& message);
     private:
         using ServerMessageConnection = MessageConnection<Message, Message>;

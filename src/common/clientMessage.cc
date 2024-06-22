@@ -25,7 +25,7 @@ MessageCreater messageCreaters[] = {
     QuitMessage::create,
 };
 
-MessagePointer Message::CreateMessage(MessageType type){
+Message::MessagePointer Message::CreateMessage(MessageType type){
     size_t index = static_cast<size_t>(type);
     size_t num_messages = sizeof(messageCreaters)/sizeof(*messageCreaters);
     if(index >= num_messages){
@@ -34,7 +34,7 @@ MessagePointer Message::CreateMessage(MessageType type){
     return messageCreaters[index]();
 }
 
-MessagePointer Message::CreateMessage(const std::byte *buf, std::size_t size){
+Message::MessagePointer Message::CreateMessage(const std::byte *buf, std::size_t size){
     MessageType type;
     MessageErrorStatus status = peek(buf, size, type);
     if(status != MessageErrorStatus::Success){

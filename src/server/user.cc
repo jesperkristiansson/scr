@@ -14,7 +14,7 @@ ssize_t User::receive(std::size_t bytes){
     return msgConn.receive(bytes);
 }
 
-MessageErrorStatus User::get_message(MessagePointer &mp){
+MessageErrorStatus User::get_message(Message::MessagePointer &mp){
     return msgConn.get_message(mp);
 }
 

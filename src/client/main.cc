@@ -24,7 +24,7 @@ inline std::string read_line(){
 
 bool handle_input(Server &server){
     std::string line = read_line();
-    MessagePointer msgPtr = string_to_message(line);
+    Message::MessagePointer msgPtr = string_to_message(line);
     if(!msgPtr){
         std::cerr << "string_to_message returned nullptr" << std::endl;
     }
@@ -79,7 +79,7 @@ bool client_loop(Server &server){
                     return true;
                 }
 
-                MessagePointer mp;
+                Message::MessagePointer mp;
                 MessageErrorStatus status = server.get_message(mp);
                 switch(status){
                     case MessageErrorStatus::Success:
