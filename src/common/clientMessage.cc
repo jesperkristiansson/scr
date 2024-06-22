@@ -17,13 +17,15 @@ MessageErrorStatus ClientMessage::peek(const std::byte *buf, std::size_t size, M
         return MessageErrorStatus::Success;
 }
 
-typedef std::unique_ptr<ClientMessage>(*MessageCreater)();
+namespace {
+    typedef std::unique_ptr<ClientMessage>(*MessageCreater)();
 
-MessageCreater messageCreaters[] = {
-    JoinMessage::create,
-    MessageMessage::create,
-    QuitMessage::create,
-};
+    MessageCreater messageCreaters[] = {
+        JoinMessage::create,
+        MessageMessage::create,
+        QuitMessage::create,
+    };
+}
 
 ClientMessage::MessagePointer ClientMessage::CreateMessage(MessageType type){
     size_t index = static_cast<size_t>(type);
