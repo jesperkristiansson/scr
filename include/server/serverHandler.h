@@ -8,7 +8,7 @@
 
 class Server;
 
-class ServerHandler : public Handler{
+class ServerHandler : public Handler<User>{
 public:
     ServerHandler(Server *s) : server{s} {}
     void setServer(Server *s){server = s;}
