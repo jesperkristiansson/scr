@@ -22,6 +22,6 @@ void ServerHandler::handle(MessageMessage &msg, User &from){
     server->house.echo_message(&from, msg.msg);
 }
 
-void ServerHandler::handle(Message& msg [[maybe_unused]], User &from [[maybe_unused]]){
+void ServerHandler::handle(ClientMessage& msg [[maybe_unused]], User &from [[maybe_unused]]){
     std::cerr << "Unrecognized message" << std::endl;
 }

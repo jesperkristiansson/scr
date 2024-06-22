@@ -7,20 +7,20 @@
 #include <utility>
 
 namespace{  //file private
-    using MessageCreator = Message::MessagePointer (*)(std::stringstream);
+    using MessageCreator = ClientMessage::MessagePointer (*)(std::stringstream);
 
-    Message::MessagePointer JoinCreator(std::stringstream ss){
+    ClientMessage::MessagePointer JoinCreator(std::stringstream ss){
         std::string room;
         ss >> room;
         if(ss.fail()){
             std::cerr << "command /join requires an argument" << std::endl;
-            return Message::MessagePointer();
+            return ClientMessage::MessagePointer();
         }
-        return Message::MessagePointer(new JoinMessage(room));
+        return ClientMessage::MessagePointer(new JoinMessage(room));
     }
 
-    Message::MessagePointer QuitCreator(std::stringstream ss [[maybe_unused]]){
-        return Message::MessagePointer(new QuitMessage());
+    ClientMessage::MessagePointer QuitCreator(std::stringstream ss [[maybe_unused]]){
+        return ClientMessage::MessagePointer(new QuitMessage());
     }
 
     struct command{
@@ -34,7 +34,7 @@ namespace{  //file private
     };
 }
 
-Message::MessagePointer string_to_message(const std::string &string){
+ClientMessage::MessagePointer string_to_message(const std::string &string){
     if(string.size() && string[0] == '/'){    //is a command
         std::stringstream ss(string);
         std::string command;
@@ -48,8 +48,8 @@ Message::MessagePointer string_to_message(const std::string &string){
         }
 
         std::cerr << "command \"" << command << "\" does not exist" << std::endl;
-        return Message::MessagePointer();
+        return ClientMessage::MessagePointer();
     } else{
-        return Message::MessagePointer(new MessageMessage(string));
+        return ClientMessage::MessagePointer(new MessageMessage(string));
     }
 }

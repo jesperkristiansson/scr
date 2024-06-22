@@ -15,7 +15,7 @@ public:
     void handle(JoinMessage& msg, User &from);
     void handle(MessageMessage &msg, User &from);
     void handle(QuitMessage &msg, User &from);
-    void handle(Message& msg, User &from);
+    void handle(ClientMessage& msg, User &from);
 private:
     Server *server;
 };

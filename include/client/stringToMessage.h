@@ -5,6 +5,6 @@
 
 #include <string>
 
-Message::MessagePointer string_to_message(const std::string &string);
+ClientMessage::MessagePointer string_to_message(const std::string &string);
 
 #endif

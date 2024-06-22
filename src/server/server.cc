@@ -90,7 +90,7 @@ bool Server::handle_poll_event(struct pollfd& item){
         return true;
     }
 
-    Message::MessagePointer mp;
+    ClientMessage::MessagePointer mp;
     MessageErrorStatus status = user.get_message(mp);
     switch(status){
         case MessageErrorStatus::Success:

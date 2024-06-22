@@ -14,10 +14,10 @@ ssize_t User::receive(std::size_t bytes){
     return msgConn.receive(bytes);
 }
 
-MessageErrorStatus User::get_message(Message::MessagePointer &mp){
+MessageErrorStatus User::get_message(ClientMessage::MessagePointer &mp){
     return msgConn.get_message(mp);
 }
 
-bool User::send_message(const Message &message){
+bool User::send_message(const ClientMessage &message){
     return msgConn.send_message(message);
 }

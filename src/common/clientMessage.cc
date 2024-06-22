@@ -1,7 +1,7 @@
 #include "common/clientMessage.h"
 #include "common/clientMessages.h"
 
-MessageErrorStatus Message::peek(const std::byte *buf, std::size_t size, MessageType &type_ret){
+MessageErrorStatus ClientMessage::peek(const std::byte *buf, std::size_t size, MessageType &type_ret){
         if(size < sizeof(MessageType)){
             return MessageErrorStatus::NotEnoughData;
         }
@@ -17,7 +17,7 @@ MessageErrorStatus Message::peek(const std::byte *buf, std::size_t size, Message
         return MessageErrorStatus::Success;
 }
 
-typedef std::unique_ptr<Message>(*MessageCreater)();
+typedef std::unique_ptr<ClientMessage>(*MessageCreater)();
 
 MessageCreater messageCreaters[] = {
     JoinMessage::create,
@@ -25,7 +25,7 @@ MessageCreater messageCreaters[] = {
     QuitMessage::create,
 };
 
-Message::MessagePointer Message::CreateMessage(MessageType type){
+ClientMessage::MessagePointer ClientMessage::CreateMessage(MessageType type){
     size_t index = static_cast<size_t>(type);
     size_t num_messages = sizeof(messageCreaters)/sizeof(*messageCreaters);
     if(index >= num_messages){
@@ -34,7 +34,7 @@ Message::MessagePointer Message::CreateMessage(MessageType type){
     return messageCreaters[index]();
 }
 
-Message::MessagePointer Message::CreateMessage(const std::byte *buf, std::size_t size){
+ClientMessage::MessagePointer ClientMessage::CreateMessage(const std::byte *buf, std::size_t size){
     MessageType type;
     MessageErrorStatus status = peek(buf, size, type);
     if(status != MessageErrorStatus::Success){

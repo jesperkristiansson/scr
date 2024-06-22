@@ -15,9 +15,9 @@ enum class MessageType : uint8_t{
 
 class User;
 
-class Message : public M<MessageType, User>{
+class ClientMessage : public M<MessageType, User>{
 public:
-    using MessagePointer = std::unique_ptr<Message>;
+    using MessagePointer = std::unique_ptr<ClientMessage>;
 
     static MessageErrorStatus peek(const std::byte *buf, std::size_t size, MessageType &type_ret);
 

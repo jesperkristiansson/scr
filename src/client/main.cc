@@ -24,7 +24,7 @@ inline std::string read_line(){
 
 bool handle_input(Server &server){
     std::string line = read_line();
-    Message::MessagePointer msgPtr = string_to_message(line);
+    ClientMessage::MessagePointer msgPtr = string_to_message(line);
     if(!msgPtr){
         std::cerr << "string_to_message returned nullptr" << std::endl;
     }
@@ -32,7 +32,7 @@ bool handle_input(Server &server){
     return server.send_message(*msgPtr);
 }
 
-int handle_message(const Message *msg){
+int handle_message(const ClientMessage *msg){
     if(dynamic_cast<const MessageMessage *>(msg)){
         std::cout << "msg from server: " << dynamic_cast<const MessageMessage *>(msg)->msg << std::endl;
     } else if(dynamic_cast<const QuitMessage *>(msg)){
@@ -79,7 +79,7 @@ bool client_loop(Server &server){
                     return true;
                 }
 
-                Message::MessagePointer mp;
+                ClientMessage::MessagePointer mp;
                 MessageErrorStatus status = server.get_message(mp);
                 switch(status){
                     case MessageErrorStatus::Success:

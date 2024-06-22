@@ -8,7 +8,7 @@
 #include <limits>
 
 template<typename TDerived, MessageType MType>
-class MessageBase : public Message{
+class MessageBase : public ClientMessage{
 public:
     virtual void dispatch(Handler& handler, User &from) override{
         handler.handle(dynamic_cast<TDerived&>(*this), from);
