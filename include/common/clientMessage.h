@@ -15,7 +15,7 @@ enum class MessageType : uint8_t{
 
 class User;
 
-class ClientMessage : public M<MessageType, User>{
+class ClientMessage : public Message<MessageType, User>{
 public:
     using MessagePointer = std::unique_ptr<ClientMessage>;
 

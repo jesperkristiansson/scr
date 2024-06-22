@@ -18,10 +18,9 @@ enum class MessageErrorStatus{
 class Handler;
 
 template<typename TMessageType, typename THandleArgType>
-class M{
+class Message{
 public:
     using MessageType = TMessageType;
-    using MPointer = std::unique_ptr<M<TMessageType, THandleArgType>>;
 
     virtual std::size_t size() const = 0;
     virtual void dispatch(Handler& handler, THandleArgType &arg) = 0;
