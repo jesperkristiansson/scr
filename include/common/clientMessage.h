@@ -1,27 +1,29 @@
 #ifndef CLIENT_MESSAGE_H
 #define CLIENT_MESSAGE_H
 
-#include <string>
+#include "message.h"
+
 #include <cstddef>
 #include <memory>
 
-enum class MessageErrorStatus{
-    Success,
-    NotEnoughData,
-    InvalidData,
-    Overflow,
-    Other
+enum class MessageType : uint8_t{
+    JoinMessage,
+    MessageMessage,
+    QuitMessage,
+    NUM_ELEMENTS
 };
 
-class Handler;
 class User;
 
-class Message{
+class Message : public M<MessageType, User>{
 public:
-    virtual void dispatch(Handler& handler, User &from) = 0;
-    virtual std::size_t size() const = 0;
-    virtual MessageErrorStatus read(const std::byte *&buf, std::size_t &size) = 0;
-    virtual MessageErrorStatus write(std::byte *&buf, std::size_t &size) const = 0;
+    using MessagePointer = std::unique_ptr<Message>;
+
+    static MessageErrorStatus peek(const std::byte *buf, std::size_t size, MessageType &type_ret);
+
+    static MessagePointer CreateMessage(MessageType type);
+
+    static MessagePointer CreateMessage(const std::byte *buf, std::size_t size);
 };
 
 using MessagePointer = std::unique_ptr<Message>;

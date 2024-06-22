@@ -20,9 +20,10 @@ class User{
         MessageErrorStatus get_message(MessagePointer &mp);
         bool send_message(const Message& message);
     private:
+        using ServerMessageConnection = MessageConnection<Message, Message>;
         Room *room;
         std::string username;
-        MessageConnection msgConn;
+        ServerMessageConnection msgConn;
 };
 
 #endif
