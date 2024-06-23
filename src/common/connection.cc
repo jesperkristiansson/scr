@@ -1,4 +1,5 @@
 #include "common/connection.h"
+#include "common/utils.h"
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -37,7 +38,7 @@ bool Connection::send_data(std::vector<std::byte> data){
 
 bool Connection::send_data(const void *data, size_t size){
     while(size){
-        std::cout << "sending data" << std::endl;
+        DBOUT("sending data");
         int bytes_sent = send(sock_fd, data, size, 0);
         if(bytes_sent == -1){
             perror("send()");
