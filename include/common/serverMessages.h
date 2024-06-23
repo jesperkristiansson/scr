@@ -98,6 +98,7 @@ namespace ServerMessages{
     };
 
     class QuitMessage : public MessageBase<QuitMessage, ServerMessage::MessageType::QuitMessage>{
+        public:
         std::size_t size() const override{
             return sizeof(MessageType);
         }
