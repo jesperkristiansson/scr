@@ -10,6 +10,7 @@ enum class ClientMessageType : uint8_t{
     JoinMessage,
     MessageMessage,
     QuitMessage,
+    LoginMessage,
     NUM_ELEMENTS
 };
 
@@ -34,6 +35,7 @@ namespace ClientMessages{
     class JoinMessage;
     class MessageMessage;
     class QuitMessage;
+    class LoginMessage;
 }
 
 #endif

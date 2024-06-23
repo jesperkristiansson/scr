@@ -15,6 +15,7 @@ public:
     void handle(ClientMessages::JoinMessage& msg, User &from);
     void handle(ClientMessages::MessageMessage &msg, User &from);
     void handle(ClientMessages::QuitMessage &msg, User &from);
+    void handle(ClientMessages::LoginMessage &msg, User &from);
     void handle(ClientMessage& msg, User &from);
 private:
     Server *server;

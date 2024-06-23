@@ -24,6 +24,7 @@ namespace {
         ClientMessages::JoinMessage::create,
         ClientMessages::MessageMessage::create,
         ClientMessages::QuitMessage::create,
+        ClientMessages::LoginMessage::create,
     };
 }
 

@@ -185,6 +185,76 @@ namespace ClientMessages{
         }
     };
 
+    class LoginMessage : public MessageBase<LoginMessage, ClientMessage::MessageType::LoginMessage>{
+    public:
+        LoginMessage() {}
+        LoginMessage(const std::string &name, const std::string &passwd) : name(name), passwd(passwd) {}
+
+        std::size_t size() const override{
+            return sizeof(MessageType) + sizeof(uint16_t) + name.size() + sizeof(uint16_t) + passwd.size();
+        }
+
+        MessageErrorStatus read(const std::byte *&buf, std::size_t &size) override{
+            const std::byte *_buf = buf;
+            std::size_t _size = size;
+
+            MessageErrorStatus res;
+
+            //verify type
+            res = readType(_buf, _size, type());
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            //read name
+            res = readString(_buf, _size, name);
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            //read passwd
+            res = readString(_buf, _size, passwd);
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            buf = _buf;
+            size = _size;
+
+            return MessageErrorStatus::Success;
+        }
+
+        MessageErrorStatus write(std::byte *&buf, std::size_t &size) const override {
+            std::byte *_buf = buf;
+            std::size_t _size = size;
+
+            MessageErrorStatus res;
+
+            //verify validity
+            res = writeType(_buf, _size, type());
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            res = writeString(_buf, _size, name);
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            res = writeString(_buf, _size, passwd);
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            buf = _buf;
+            size = _size;
+
+            return MessageErrorStatus::Success;
+        }
+        std::string name;
+        std::string passwd;
+    };
+
 }
 
 #endif

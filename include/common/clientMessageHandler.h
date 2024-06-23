@@ -8,6 +8,7 @@ class ClientMessageHandler{
         virtual void handle(ClientMessages::JoinMessage& msg, User &from) = 0;
         virtual void handle(ClientMessages::MessageMessage &msg, User &from) = 0;
         virtual void handle(ClientMessages::QuitMessage &msg, User &from) = 0;
+        virtual void handle(ClientMessages::LoginMessage &msg, User &from) = 0;
         virtual void handle(ClientMessage& msg, User &from) = 0;
     protected:
         ClientMessageHandler() = default;

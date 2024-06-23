@@ -21,6 +21,11 @@ void ServerHandler::handle(ClientMessages::MessageMessage &msg, User &from){
     server->house.echo_message(&from, msg.msg);
 }
 
+void ServerHandler::handle(ClientMessages::LoginMessage &msg, User &from){
+    (void)msg;
+    (void)from;
+}
+
 void ServerHandler::handle(ClientMessage& msg [[maybe_unused]], User &from [[maybe_unused]]){
     std::cerr << "Unrecognized message" << std::endl;
 }
