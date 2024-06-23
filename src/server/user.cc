@@ -18,6 +18,6 @@ MessageErrorStatus User::get_message(ClientMessage::MessagePointer &mp){
     return msgConn.get_message(mp);
 }
 
-bool User::send_message(const ClientMessage &message){
+bool User::send_message(const ServerMessage &message){
     return msgConn.send_message(message);
 }

@@ -3,6 +3,7 @@
 
 #include "common/utils.h"
 #include "common/clientMessages.h"
+#include "common/serverMessages.h"
 
 #include <cstdio>
 #include <iostream>
@@ -32,10 +33,10 @@ bool handle_input(Server &server){
     return server.send_message(*msgPtr);
 }
 
-int handle_message(const ClientMessage *msg){
-    if(dynamic_cast<const MessageMessage *>(msg)){
-        std::cout << "msg from server: " << dynamic_cast<const MessageMessage *>(msg)->msg << std::endl;
-    } else if(dynamic_cast<const QuitMessage *>(msg)){
+int handle_message(const ServerMessage *msg){
+    if(dynamic_cast<const ServerMessages::MessageMessage *>(msg)){
+        std::cout << "msg from server: " << dynamic_cast<const ServerMessages::MessageMessage *>(msg)->msg << std::endl;
+    } else if(dynamic_cast<const ServerMessages::QuitMessage *>(msg)){
         std::cout << "connection lost" << std::endl;
         return 1;
     } else{
@@ -79,7 +80,7 @@ bool client_loop(Server &server){
                     return true;
                 }
 
-                ClientMessage::MessagePointer mp;
+                ServerMessage::MessagePointer mp;
                 MessageErrorStatus status = server.get_message(mp);
                 switch(status){
                     case MessageErrorStatus::Success:

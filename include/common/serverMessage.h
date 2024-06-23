@@ -1,26 +1,24 @@
-#ifndef CLIENT_MESSAGE_H
-#define CLIENT_MESSAGE_H
+#ifndef SERVER_MESSAGE_H
+#define SERVER_MESSAGE_H
 
 #include "message.h"
 
 #include <cstddef>
 #include <memory>
 
-enum class ClientMessageType : uint8_t{
-    JoinMessage,
+enum class ServerMessageType : uint8_t{
     MessageMessage,
     QuitMessage,
     NUM_ELEMENTS
 };
 
-class User;
-class ClientMessageHandler;
+class ServerMessageHandler;
 
-class ClientMessage : public Message<ClientMessageType>{
+class ServerMessage : public Message<ServerMessageType>{
 public:
-    using MessagePointer = std::unique_ptr<ClientMessage>;
+    using MessagePointer = std::unique_ptr<ServerMessage>;
 
-    virtual void dispatch(ClientMessageHandler& handler, User &arg) = 0;
+    virtual void dispatch(ServerMessageHandler& handler) = 0;
 
     static MessageErrorStatus peek(const std::byte *buf, std::size_t size, MessageType &type_ret);
 
@@ -29,9 +27,7 @@ public:
     static MessagePointer CreateMessage(const std::byte *buf, std::size_t size);
 };
 
-
-namespace ClientMessages{
-    class JoinMessage;
+namespace ServerMessages{
     class MessageMessage;
     class QuitMessage;
 }

@@ -2,6 +2,7 @@
 #define USER_H
 
 #include "common/clientMessage.h"
+#include "common/serverMessage.h"
 #include "common/messageConnection.h"
 
 #include <string>
@@ -18,9 +19,9 @@ class User{
         int get_fd() const {return msgConn.get_fd();}
         ssize_t receive(std::size_t bytes = 1024);
         MessageErrorStatus get_message(ClientMessage::MessagePointer &mp);
-        bool send_message(const ClientMessage& message);
+        bool send_message(const ServerMessage& message);
     private:
-        using ServerMessageConnection = MessageConnection<ClientMessage, ClientMessage>;
+        using ServerMessageConnection = MessageConnection<ServerMessage, ClientMessage>;
         Room *room;
         std::string username;
         ServerMessageConnection msgConn;

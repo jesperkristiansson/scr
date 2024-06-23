@@ -1,6 +1,6 @@
 #include "server/room.h"
 
-#include "common/clientMessages.h"
+#include "common/serverMessages.h"
 
 bool Room::add_member(User *member){
     if(members.insert(member).second){
@@ -21,7 +21,7 @@ bool Room::remove_member(User *member){
 }
 
 bool Room::send_message_from(std::string message, User *from){
-    MessageMessage msg(message);
+    ServerMessages::MessageMessage msg(message);
     for(User *member : members){
         if(member == from){
             continue;

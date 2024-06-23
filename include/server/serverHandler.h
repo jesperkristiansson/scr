@@ -3,18 +3,18 @@
 
 #include "server/user.h"
 
-#include "common/handler.h"
+#include "common/clientMessageHandler.h"
 #include "common/clientMessages.h"
 
 class Server;
 
-class ServerHandler : public Handler<User>{
+class ServerHandler : public ClientMessageHandler{
 public:
     ServerHandler(Server *s) : server{s} {}
     void setServer(Server *s){server = s;}
-    void handle(JoinMessage& msg, User &from);
-    void handle(MessageMessage &msg, User &from);
-    void handle(QuitMessage &msg, User &from);
+    void handle(ClientMessages::JoinMessage& msg, User &from);
+    void handle(ClientMessages::MessageMessage &msg, User &from);
+    void handle(ClientMessages::QuitMessage &msg, User &from);
     void handle(ClientMessage& msg, User &from);
 private:
     Server *server;

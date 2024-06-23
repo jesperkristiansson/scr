@@ -16,11 +16,11 @@ namespace{  //file private
             std::cerr << "command /join requires an argument" << std::endl;
             return ClientMessage::MessagePointer();
         }
-        return ClientMessage::MessagePointer(new JoinMessage(room));
+        return ClientMessage::MessagePointer(new ClientMessages::JoinMessage(room));
     }
 
     ClientMessage::MessagePointer QuitCreator(std::stringstream ss [[maybe_unused]]){
-        return ClientMessage::MessagePointer(new QuitMessage());
+        return ClientMessage::MessagePointer(new ClientMessages::QuitMessage());
     }
 
     struct command{
@@ -50,6 +50,6 @@ ClientMessage::MessagePointer string_to_message(const std::string &string){
         std::cerr << "command \"" << command << "\" does not exist" << std::endl;
         return ClientMessage::MessagePointer();
     } else{
-        return ClientMessage::MessagePointer(new MessageMessage(string));
+        return ClientMessage::MessagePointer(new ClientMessages::MessageMessage(string));
     }
 }

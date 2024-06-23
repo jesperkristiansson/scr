@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include "common/clientMessage.h"
+#include "common/serverMessage.h"
 #include "common/messageConnection.h"
 
 #include <memory>
@@ -14,10 +15,10 @@ class Server{
         bool valid() const {return msgConn.valid();}
         int get_fd() const {return msgConn.get_fd();}
         ssize_t receive(std::size_t bytes = 1024);
-        MessageErrorStatus get_message(ClientMessage::MessagePointer &mp);
+        MessageErrorStatus get_message(ServerMessage::MessagePointer &mp);
         bool send_message(const ClientMessage& message);
     private:
-        using ClientMessageConnection = MessageConnection<ClientMessage, ClientMessage>;
+        using ClientMessageConnection = MessageConnection<ClientMessage, ServerMessage>;
         Server(ClientMessageConnection &&msgConn) : msgConn(std::move(msgConn)) {}
         ClientMessageConnection msgConn;
 };

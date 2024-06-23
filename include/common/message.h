@@ -15,17 +15,12 @@ enum class MessageErrorStatus{
     Other
 };
 
-template <typename TArgType>
-class Handler;
-
-template<typename TMessageType, typename THandleArgType>
+template<typename TMessageType>
 class Message{
 public:
     using MessageType = TMessageType;
-    using MessageHandler = Handler<THandleArgType>;
 
     virtual std::size_t size() const = 0;
-    virtual void dispatch(MessageHandler& handler, THandleArgType &arg) = 0;
     virtual MessageErrorStatus read(const std::byte *&buf, std::size_t &size) = 0;
     virtual MessageErrorStatus write(std::byte *&buf, std::size_t &size) const = 0;
 

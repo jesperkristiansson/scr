@@ -4,7 +4,7 @@ ssize_t Server::receive(std::size_t bytes){
     return msgConn.receive(bytes);
 }
 
-MessageErrorStatus Server::get_message(ClientMessage::MessagePointer &mp){
+MessageErrorStatus Server::get_message(ServerMessage::MessagePointer &mp){
     return msgConn.get_message(mp);
 }
 
