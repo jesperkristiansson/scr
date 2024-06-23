@@ -25,7 +25,7 @@ public:
     virtual MessageErrorStatus write(std::byte *&buf, std::size_t &size) const = 0;
 
 protected:
-    virtual MessageType type() const;
+    virtual MessageType type() const = 0;
 
     static MessageErrorStatus readType(const std::byte *&buf, std::size_t &size, MessageType expected_type){
         if(size < sizeof(MessageType)){

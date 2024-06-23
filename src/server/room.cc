@@ -21,7 +21,7 @@ bool Room::remove_member(User *member){
 }
 
 bool Room::send_message_from(std::string message, User *from){
-    ServerMessages::MessageMessage msg(message);
+    ServerMessages::MessageMessage msg(from->get_name(), message);
     for(User *member : members){
         if(member == from){
             continue;

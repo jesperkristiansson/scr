@@ -35,7 +35,8 @@ bool handle_input(Server &server){
 
 int handle_message(const ServerMessage *msg){
     if(dynamic_cast<const ServerMessages::MessageMessage *>(msg)){
-        std::cout << "msg from server: " << dynamic_cast<const ServerMessages::MessageMessage *>(msg)->msg << std::endl;
+        const ServerMessages::MessageMessage *message = dynamic_cast<const ServerMessages::MessageMessage *>(msg);
+        std::cout << message->from_name << ": " << message->msg << std::endl;
     } else if(dynamic_cast<const ServerMessages::QuitMessage *>(msg)){
         std::cout << "connection lost" << std::endl;
         return 1;

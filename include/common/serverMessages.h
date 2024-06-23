@@ -29,10 +29,10 @@ namespace ServerMessages{
     class MessageMessage : public MessageBase<MessageMessage, ServerMessage::MessageType::MessageMessage>{
     public:
         MessageMessage() {}
-        MessageMessage(const std::string &str) : msg(str) {}
+        MessageMessage(const std::string &from_name, const std::string &str) : from_name(from_name), msg(str) {}
 
         std::size_t size() const override{
-            return sizeof(MessageType) + sizeof(uint16_t) + msg.size();
+            return sizeof(MessageType) + sizeof(uint16_t) + from_name.size() + sizeof(uint16_t) + msg.size();
         }
 
         MessageErrorStatus read(const std::byte *&buf, std::size_t &size) override{
@@ -47,7 +47,13 @@ namespace ServerMessages{
                 return res;
             }
 
-            //read string
+            //read name
+            res = readString(_buf, _size, from_name);
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            //read msg
             res = readString(_buf, _size, msg);
             if(res != MessageErrorStatus::Success){
                 return res;
@@ -65,12 +71,18 @@ namespace ServerMessages{
 
             MessageErrorStatus res;
 
-            //verify validity
             res = writeType(_buf, _size, type());
             if(res != MessageErrorStatus::Success){
                 return res;
             }
 
+            //write name
+            res = writeString(_buf, _size, from_name);
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            //write msg
             res = writeString(_buf, _size, msg);
             if(res != MessageErrorStatus::Success){
                 return res;
@@ -81,6 +93,7 @@ namespace ServerMessages{
 
             return MessageErrorStatus::Success;
         }
+        std::string from_name;
         std::string msg;
     };
 
