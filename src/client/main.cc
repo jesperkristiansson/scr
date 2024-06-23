@@ -40,6 +40,9 @@ int handle_message(const ServerMessage *msg){
     } else if(dynamic_cast<const ServerMessages::QuitMessage *>(msg)){
         std::cout << "connection lost" << std::endl;
         return 1;
+    } else if(dynamic_cast<const ServerMessages::LoginResultMessage *>(msg)){
+        //not implemented
+        return 1;
     } else{
         std::cerr << "handle_message: unrecognized message" << std::endl;
         return -1;

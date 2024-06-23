@@ -23,6 +23,7 @@ namespace {
     MessageCreater messageCreaters[] = {
         ServerMessages::MessageMessage::create,
         ServerMessages::QuitMessage::create,
+        ServerMessages::LoginResultMessage::create,
     };
 }
 
