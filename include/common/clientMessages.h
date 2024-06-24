@@ -191,6 +191,10 @@ namespace ClientMessages{
         LoginMessage() {}
         LoginMessage(const std::string &name, const std::string &passwd) : name(name), passwd(passwd) {}
 
+        bool isPrivileged() override {
+            return false;
+        }
+
         std::size_t size() const override{
             return sizeof(MessageType) + sizeof(uint16_t) + name.size() + sizeof(uint16_t) + passwd.size();
         }

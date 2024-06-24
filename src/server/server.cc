@@ -2,6 +2,7 @@
 #include "server/user.h"
 
 #include "common/clientMessage.h"
+#include "common/serverMessages.h"
 
 #include <iostream>
 #include <algorithm>
@@ -60,7 +61,9 @@ void Server::disconnect_user(User &user){
     //close connection
     int client_fd = user.get_fd();
 
-    house.remove_user(&user);
+    if(user.is_logged_in()){
+        house.remove_user(&user);
+    }
 
     auto pollfd_match = [&](const pollfd &item){return item.fd == client_fd;};
     auto it = std::find_if(poll_items.begin(), poll_items.end(), pollfd_match);
@@ -99,6 +102,14 @@ bool Server::handle_poll_event(struct pollfd& item){
             return true;
             break;
     }
+
+    //is user attempting to use privileged message while not logged in?
+    if(mp->isPrivileged() && !user.is_logged_in()){
+        ServerMessages::NotPrivilegedMessage message;
+        user.send_message(message);
+        return true;
+    }
+
     mp->dispatch(handler, user);
     return true;
 }
@@ -113,14 +124,11 @@ bool Server::accept_connections(){
         struct pollfd client = {.fd = client_fd, .events = POLLIN, .revents = 0};
         poll_items.push_back(client);
 
-        std::string name = std::string("User") + std::to_string(client_fd);
-        auto pair = users.emplace(client_fd, User(name, client_fd));
+        auto pair = users.emplace(client_fd, User(client_fd));
         if(!pair.second){
             std::cerr << "users.emplace failed" << std::endl;
             return false;
         }
-        User *user = &pair.first->second;
-        house.add_user(user);
     }
 
     return true;

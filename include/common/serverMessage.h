@@ -10,6 +10,7 @@ enum class ServerMessageType : uint8_t{
     MessageMessage,
     QuitMessage,
     LoginResultMessage,
+    NotPrivilegedMessage,
     NUM_ELEMENTS
 };
 
@@ -32,6 +33,7 @@ namespace ServerMessages{
     class MessageMessage;
     class QuitMessage;
     class LoginResultMessage;
+    class NotPrivilegedMessage;
 }
 
 #endif

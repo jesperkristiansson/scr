@@ -23,6 +23,8 @@ public:
 
     virtual void dispatch(ClientMessageHandler& handler, User &arg) = 0;
 
+    virtual bool isPrivileged(){return true;}
+
     static MessageErrorStatus peek(const std::byte *buf, std::size_t size, MessageType &type_ret);
 
     static MessagePointer CreateMessage(MessageType type);

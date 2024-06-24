@@ -1,6 +1,6 @@
 #include "server/user.h"
 
-User::User(std::string name, int sock_fd) : room{nullptr}, username{name}, msgConn(sock_fd) {}
+User::User(int sock_fd) : room{nullptr}, msgConn(sock_fd) {}
 
 void User::set_room(Room *new_room){
     room = new_room;

@@ -12,7 +12,7 @@ class Room;
 
 class User{
     public:
-        User(std::string name, int sock_fd);
+        User(int sock_fd);
         void set_room(Room *new_room);
         Room *get_room() const;
         std::string get_name() const {return username;}

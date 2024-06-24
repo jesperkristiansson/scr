@@ -35,6 +35,7 @@ void ServerHandler::handle(ClientMessages::LoginMessage &msg, User &from){
     }
 
     from.log_in(msg.name);
+    server->house.add_user(&from);
     //reply with login_success
     ServerMessages::LoginResultMessage res_msg(res);
     from.send_message(res_msg);

@@ -198,6 +198,49 @@ namespace ServerMessages{
         uint16_t result;
     };
 
+    class NotPrivilegedMessage : public MessageBase<NotPrivilegedMessage, ServerMessage::MessageType::NotPrivilegedMessage>{
+    public:
+        NotPrivilegedMessage() {}
+
+        std::size_t size() const override{
+            return sizeof(MessageType);
+        }
+
+        MessageErrorStatus read(const std::byte *&buf, std::size_t &size) override{
+            const std::byte *_buf = buf;
+            std::size_t _size = size;
+
+            MessageErrorStatus res;
+
+            //verify type
+            res = readType(_buf, _size, type());
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            buf = _buf;
+            size = _size;
+
+            return MessageErrorStatus::Success;
+        }
+
+        MessageErrorStatus write(std::byte *&buf, std::size_t &size) const override {
+            std::byte *_buf = buf;
+            std::size_t _size = size;
+
+            MessageErrorStatus res;
+
+            res = writeType(_buf, _size, type());
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            buf = _buf;
+            size = _size;
+
+            return MessageErrorStatus::Success;
+        }
+    };
 }
 
 #endif
