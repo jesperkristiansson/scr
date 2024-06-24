@@ -21,6 +21,8 @@ class ClientMessage : public Message<ClientMessageType>{
 public:
     using MessagePointer = std::unique_ptr<ClientMessage>;
 
+    virtual ~ClientMessage() = default;
+
     virtual void dispatch(ClientMessageHandler& handler, User &arg) = 0;
 
     virtual bool isPrivileged(){return true;}

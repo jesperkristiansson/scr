@@ -20,6 +20,8 @@ class ServerMessage : public Message<ServerMessageType>{
 public:
     using MessagePointer = std::unique_ptr<ServerMessage>;
 
+    virtual ~ServerMessage() = default;
+
     virtual void dispatch(ServerMessageHandler& handler) = 0;
 
     static MessageErrorStatus peek(const std::byte *buf, std::size_t size, MessageType &type_ret);

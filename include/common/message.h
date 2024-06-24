@@ -21,6 +21,8 @@ class Message{
 public:
     using MessageType = TMessageType;
 
+    virtual ~Message() = default;
+
     virtual std::size_t size() const = 0;
     virtual MessageErrorStatus read(const std::byte *&buf, std::size_t &size) = 0;
     virtual MessageErrorStatus write(std::byte *&buf, std::size_t &size) const = 0;
