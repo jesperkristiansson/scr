@@ -3,6 +3,7 @@
 
 #include "common/clientMessage.h"
 #include "common/clientMessages.h"
+#include "common/serverMessages.h"
 
 #include <iostream>
 #include <unistd.h>
@@ -22,8 +23,21 @@ void ServerHandler::handle(ClientMessages::MessageMessage &msg, User &from){
 }
 
 void ServerHandler::handle(ClientMessages::LoginMessage &msg, User &from){
-    (void)msg;
-    (void)from;
+    std::cout << "Received login-request (" << msg.name << ", " << msg.passwd << ")" << std::endl;
+    if(from.is_logged_in()){
+        //user is already logged in, reject?
+    }
+
+    uint16_t res = 1;
+    bool success = 1;   //do validation here
+    if(!success){
+        res = 0;
+    }
+
+    from.log_in(msg.name);
+    //reply with login_success
+    ServerMessages::LoginResultMessage res_msg(res);
+    from.send_message(res_msg);
 }
 
 void ServerHandler::handle(ClientMessage& msg [[maybe_unused]], User &from [[maybe_unused]]){

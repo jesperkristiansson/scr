@@ -16,11 +16,37 @@
 #include <cassert>
 #include <unistd.h>
 #include <poll.h>
+#include <termios.h>
+
+static std::string username;
 
 inline std::string read_line(){
     std::string line;
     std::getline(std::cin, line);
     return line;
+}
+
+inline std::string read_line_hidden(){
+    struct termios old_term, new_term;
+    if(tcgetattr(STDIN_FILENO, &old_term) != 0){
+        //error;
+        return std::string();
+    }
+    new_term = old_term;
+    new_term.c_lflag &= ~ECHO;
+    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_term) != 0){
+        //error;
+        return std::string();
+    }
+    //read input
+    std::string out = read_line();
+
+    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_term) != 0){
+        //error;
+        return std::string();
+    }
+
+    return out;
 }
 
 bool handle_input(Server &server){
@@ -106,6 +132,46 @@ bool client_loop(Server &server){
     return true;
 }
 
+bool log_in(Server &server){
+    std::cout << "Username: " << std::flush;
+    username = read_line();
+    std::cout << "Password: " << std::flush;
+    std::string password = read_line_hidden();
+
+    //send login request
+    ClientMessages::LoginMessage message(username, password);
+    server.send_message(message);
+
+    //check answer
+    ssize_t received = server.receive();
+    if(received < 0){
+        //error
+        std::cerr << "server.receive error" << std::endl;
+        return false;
+    } else if(received == 0){
+        //connection closed
+        return true;
+    }
+
+    ServerMessage::MessagePointer mp;
+    MessageErrorStatus status = server.get_message(mp);
+    switch(status){
+        case MessageErrorStatus::Success:
+            break;
+        default:
+            return true;
+            break;
+    }
+
+    auto mesg = dynamic_cast<const ServerMessages::LoginResultMessage *>(mp.get());
+    if(!mesg){
+        //wrong message type
+        return false;
+    }
+
+    return mesg->result == 1;
+}
+
 int main(int argc, char **argv){
     assert(argc == 3);
     //add error checking for IP address
@@ -131,6 +197,14 @@ int main(int argc, char **argv){
     if(!server.valid()){
         return EXIT_FAILURE;
     }
+
+    bool success = log_in(server);
+    if(!success){
+        std::cerr << "Log in failed" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::cout << "Logged in as " << username << std::endl;
 
     client_loop(server);
 

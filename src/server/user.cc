@@ -10,6 +10,11 @@ Room *User::get_room() const{
     return room;
 }
 
+void User::log_in(const std::string &name){
+    logged_in = true;
+    this->username = name;
+}
+
 ssize_t User::receive(std::size_t bytes){
     return msgConn.receive(bytes);
 }
