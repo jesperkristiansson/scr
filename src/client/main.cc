@@ -1,5 +1,6 @@
 #include "client/server.h"
 #include "client/stringToMessage.h"
+#include "client/screen.h"
 
 #include "common/utils.h"
 #include "common/clientMessages.h"
@@ -16,41 +17,15 @@
 #include <cassert>
 #include <unistd.h>
 #include <poll.h>
-#include <termios.h>
 
 static std::string username;
 
-inline std::string read_line(){
+bool handle_input(Server &server, Screen &screen){
     std::string line;
-    std::getline(std::cin, line);
-    return line;
-}
-
-inline std::string read_line_hidden(){
-    struct termios old_term, new_term;
-    if(tcgetattr(STDIN_FILENO, &old_term) != 0){
-        //error;
-        return std::string();
-    }
-    new_term = old_term;
-    new_term.c_lflag &= ~ECHO;
-    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &new_term) != 0){
-        //error;
-        return std::string();
-    }
-    //read input
-    std::string out = read_line();
-
-    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_term) != 0){
-        //error;
-        return std::string();
+    if(!screen.get_input(line)){
+        return true;
     }
 
-    return out;
-}
-
-bool handle_input(Server &server){
-    std::string line = read_line();
     ClientMessage::MessagePointer msgPtr = string_to_message(line);
     if(!msgPtr){
         std::cerr << "string_to_message returned nullptr" << std::endl;
@@ -59,12 +34,17 @@ bool handle_input(Server &server){
     return server.send_message(*msgPtr);
 }
 
-int handle_message(const ServerMessage *msg){
+int handle_message(const ServerMessage *msg, Screen &screen){
     if(dynamic_cast<const ServerMessages::MessageMessage *>(msg)){
         const ServerMessages::MessageMessage *message = dynamic_cast<const ServerMessages::MessageMessage *>(msg);
-        std::cout << message->from_name << ": " << message->msg << std::endl;
+        std::string line = message->from_name + ": " + message->msg;
+        screen.put_message(line);
+        screen.update_screen();
+        //std::cout << message->from_name << ": " << message->msg << std::endl;
     } else if(dynamic_cast<const ServerMessages::QuitMessage *>(msg)){
-        std::cout << "connection lost" << std::endl;
+        screen.put_message("Connection lost");
+        screen.update_screen();
+        //std::cout << "connection lost" << std::endl;
         return 1;
     } else if(dynamic_cast<const ServerMessages::LoginResultMessage *>(msg)){
         //not implemented
@@ -77,7 +57,7 @@ int handle_message(const ServerMessage *msg){
     return 0;
 }
 
-bool client_loop(Server &server){
+bool client_loop(Server &server, Screen &screen){
     constexpr int stdin_index = 0;
     constexpr int server_index = 1;
     struct pollfd items[2];
@@ -86,7 +66,7 @@ bool client_loop(Server &server){
     struct pollfd &stdin_item = items[stdin_index];
     struct pollfd &server_item = items[server_index];
 
-    std::vector<std::byte> buffer;
+    screen.start_app();
 
     constexpr int timeout_ms = 100;
     while(1){
@@ -96,7 +76,7 @@ bool client_loop(Server &server){
             return false;
         } else if(num_events > 0){
             if(stdin_item.revents){
-                handle_input(server);
+                handle_input(server, screen);
             }
             if(server_item.revents){
                 //get packet from server
@@ -120,7 +100,7 @@ bool client_loop(Server &server){
                         break;
                 }
 
-                int res = handle_message(mp.get());
+                int res = handle_message(mp.get(), screen);
                 if(res == -1){
                     return false;
                 } else if(res == 1){
@@ -132,11 +112,9 @@ bool client_loop(Server &server){
     return true;
 }
 
-bool log_in(Server &server){
-    std::cout << "Username: " << std::flush;
-    username = read_line();
-    std::cout << "Password: " << std::flush;
-    std::string password = read_line_hidden();
+bool log_in(Server &server, Screen &screen){
+    std::string password;
+    screen.get_login(username, password);
 
     //send login request
     ClientMessages::LoginMessage message(username, password);
@@ -198,15 +176,15 @@ int main(int argc, char **argv){
         return EXIT_FAILURE;
     }
 
-    bool success = log_in(server);
+    Screen screen;
+
+    bool success = log_in(server, screen);
     if(!success){
         std::cerr << "Log in failed" << std::endl;
         return EXIT_FAILURE;
     }
 
-    std::cout << "Logged in as " << username << std::endl;
-
-    client_loop(server);
+    client_loop(server, screen);
 
     return EXIT_SUCCESS;
 }
