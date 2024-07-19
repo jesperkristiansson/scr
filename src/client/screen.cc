@@ -66,6 +66,7 @@ bool Screen::start_app(int delay){
     //delay == 0 means nonblocking
     if(delay == 0){
         cbreak();
+        nodelay(stdscr, true);
     } else{
         halfdelay(delay);
     }
