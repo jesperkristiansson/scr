@@ -73,7 +73,7 @@ MessageErrorStatus MessageConnection<TSendMessage, TRecvMessage>::get_message(ty
 
 template<typename TSendMessage, typename TRecvMessage>
 bool MessageConnection<TSendMessage, TRecvMessage>::send_message(const TSendMessage &message){
-    bool ret = true;
+    bool ret = false;
 
     std::size_t size = message.size();
     std::byte *buf = new std::byte[size];
@@ -83,7 +83,7 @@ bool MessageConnection<TSendMessage, TRecvMessage>::send_message(const TSendMess
     MessageErrorStatus status = message.write(buf_cpy, size_cpy);
     if(status == MessageErrorStatus::Success){
         connection.send_data(buf, size);
-        ret = false;
+        ret = true;
     }
 
     delete[] buf;
