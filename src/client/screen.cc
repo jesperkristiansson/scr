@@ -20,7 +20,7 @@ Screen::~Screen() {
     already_exists = false;
 }
 
-void Screen::get_login(std::string &username, std::string password){
+void Screen::get_login(std::string &username, std::string &password){
     nocbreak();     //buffered input
     echo();
 

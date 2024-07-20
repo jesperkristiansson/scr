@@ -18,7 +18,7 @@ class Screen{
         Screen();
         ~Screen();
 
-        void get_login(std::string &username, std::string password);
+        void get_login(std::string &username, std::string &password);
 
         bool start_app(int delay = 0);
         void set_info(const std::string &str);
