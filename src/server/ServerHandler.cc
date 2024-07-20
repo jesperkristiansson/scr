@@ -28,16 +28,12 @@ void ServerHandler::handle(ClientMessages::LoginMessage &msg, User &from){
         //user is already logged in, reject?
     }
 
-    uint16_t res = 1;
-    bool success = 1;   //do validation here
-    if(!success){
-        res = 0;
-    }
+    bool success = server->user_db.user_exists(msg.name, msg.passwd);
 
     from.log_in(msg.name);
     server->house.add_user(&from);
     //reply with login_success
-    ServerMessages::LoginResultMessage res_msg(res);
+    ServerMessages::LoginResultMessage res_msg(static_cast<uint16_t>(success));
     from.send_message(res_msg);
 }
 

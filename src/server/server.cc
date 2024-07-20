@@ -10,14 +10,14 @@
 #include <stdio.h>
 #include <unistd.h>
 
-std::variant<Server, int> Server::create(uint16_t port){
+std::variant<Server, int> Server::create(uint16_t port, const std::string &user_db){
     auto res = ServerSocket::create(port);
     //error returned
     if(res.index() != 0){
         std::cerr << "error creating ServerSocket" << std::endl;
         return std::get<1>(res);
     }
-    return Server(std::move(std::get<0>(res)));
+    return Server(std::move(std::get<0>(res)), user_db);
 }
 
 
@@ -25,6 +25,7 @@ Server::Server(Server &&other) :
     sock(std::move(other.sock)),
     poll_items(std::move(other.poll_items)),
     house(std::move(other.house)),
+    user_db(std::move(other.user_db)),
     handler(this)
     {}
 

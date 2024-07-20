@@ -25,7 +25,7 @@ bool UserDatabase::user_exists_hashed(const std::string &username, const std::st
         assert(pos != std::string::npos);
 
         //compare username, then hash
-        if(username.compare(0, pos, line) == 0 && hash.compare(pos + 1, std::string::npos, line) == 0){
+        if(line.compare(0, pos, username) == 0 && line.compare(pos + 1, std::string::npos, hash) == 0){
             return true;
         }
     }

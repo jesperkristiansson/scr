@@ -26,7 +26,9 @@ int main(int argc, char **argv){
     }
     port = (uint16_t)port_int;
 
-    auto res = Server::create(port);
+    std::string user_db_file = "users.db";
+
+    auto res = Server::create(port, user_db_file);
     if(res.index() != 0){
         std::cerr << "error creating Server" << std::endl;
         return EXIT_SUCCESS;
