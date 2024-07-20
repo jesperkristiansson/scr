@@ -1,6 +1,8 @@
 CXX = g++
 CXXFlAGS = -O3 --std=c++20 -Wall -Wextra -pedantic -g -I$(INCLUDE_DIR) -flto
-LDFlAGS = -flto -lncurses
+LDFlAGS = -flto
+LDFlAGS_SERVER = $(LDFlAGS)
+LDFlAGS_CLIENT = $(LDFlAGS) -lncurses
 INCLUDE_DIR = include
 SRC_DIR = src
 
@@ -17,13 +19,13 @@ CLIENT_OBJS = $(patsubst %.cc,%.o,$(CLIENT_FILES))
 all : client server
 
 %.o : %.cc
-	$(CXX) $(CXXFlAGS) -c -o $@ $^ $(LDFlAGS)
+	$(CXX) $(CXXFlAGS) -c -o $@ $^
 
 client : $(CLIENT_OBJS) $(COMMON_OBJS)
-	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS)
+	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS_CLIENT)
 
 server : $(SERVER_OBJS) $(COMMON_OBJS)
-	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS)
+	$(CXX) $(CXXFlAGS) -o $@ $^ $(LDFlAGS_SERVER)
 
 clean :
 	$(RM) client server $(SERVER_OBJS) $(CLIENT_OBJS) $(COMMON_OBJS)
