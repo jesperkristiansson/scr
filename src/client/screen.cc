@@ -74,6 +74,11 @@ bool Screen::start_app(int delay){
     noecho();
     keypad(stdscr, TRUE);
 
+    info.height = 1;
+    info.width = COLS;
+    info.starty = 0;
+    info.startx = 0;
+
     int bottom_height = 5;
 
     bottom.height = bottom_height;
@@ -81,11 +86,12 @@ bool Screen::start_app(int delay){
     bottom.starty = LINES - bottom_height;
     bottom.startx = 0;
 
-    top.height = LINES - bottom_height - 1;
+    top.height = LINES - bottom_height - info.height - 1;
     top.width = COLS;
-    top.starty = 0;
+    top.starty = info.height;
     top.startx = 0;
 
+    info.win = newwin(info.height, info.width, info.starty, info.startx);
     bottom.win = newwin(bottom.height, bottom.width, bottom.starty, bottom.startx);
     top.win = newwin(top.height, top.width, top.starty, top.startx);
     mvhline(LINES - bottom_height - 1, 0, '-', COLS);
@@ -102,6 +108,20 @@ bool Screen::start_app(int delay){
 
     move(bottom.starty, bottom.startx);
     return true;
+}
+
+void Screen::set_info(const std::string &str){
+    size_t available_space = info.width;
+    size_t str_len = str.size();
+    if(str_len > available_space){
+        str_len = available_space;
+        //print warning?
+    }
+
+    //center
+    int start_x = (info.width - str_len)/2;
+    mvwaddstr(info.win, 0, start_x, str.substr(0, str_len).c_str());
+    wrefresh(info.win);
 }
 
 void Screen::put_message(const std::string &str){

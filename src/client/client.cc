@@ -63,6 +63,7 @@ bool Client::client_loop(){
     struct pollfd &server_item = items[server_index];
 
     screen.start_app();
+    screen.set_info("Simple Chat Room");
 
     constexpr int timeout_ms = 100;
     while(1){
