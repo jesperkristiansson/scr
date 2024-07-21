@@ -11,7 +11,7 @@ public:
     bool add_message(const std::string &msg, const std::string &room);
     std::vector<std::string> get_messages(const std::string &room);
 private:
-    std::filesystem::path base_path;
+    const std::filesystem::path base_path;
 };
 
 #endif

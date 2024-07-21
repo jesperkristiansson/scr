@@ -10,15 +10,15 @@ LogDatabase::LogDatabase(const std::string &db_dir) : base_path(db_dir) {
 }
 
 bool LogDatabase::add_message(const std::string &msg, const std::string &room){
-    std::filesystem::path file_path = base_path /= room;
+    std::filesystem::path file_path = base_path / room;
     std::ofstream file(file_path, std::ios::app);
 
-    file << msg;
+    file << msg << '\n';
     return true;
 }
 
 std::vector<std::string> LogDatabase::get_messages(const std::string &room){
-    std::filesystem::path file_path = base_path /= room;
+    std::filesystem::path file_path = base_path / room;
     std::ifstream file(file_path);
 
     std::vector<std::string> messages;
