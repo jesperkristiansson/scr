@@ -19,6 +19,7 @@ void ServerHandler::handle(ClientMessages::QuitMessage& msg [[maybe_unused]], Us
 
 void ServerHandler::handle(ClientMessages::MessageMessage &msg, User &from){
     std::cout << "Received message : \"" << msg.msg << "\" from client " << from.get_name() << std::endl;
+    server->log_db.add_message(msg.msg, from.get_room()->getName());
     server->house.echo_message(&from, msg.msg);
 }
 
