@@ -56,6 +56,17 @@ protected:
         return MessageErrorStatus::Success;
     }
 
+    static MessageErrorStatus readUInt32(const std::byte *&buf, std::size_t &size, uint32_t &val_res){
+        if(size < sizeof(val_res)){
+            return MessageErrorStatus::NotEnoughData;
+        }
+        val_res = ntohl(*reinterpret_cast<const uint32_t*>(buf));
+        buf += sizeof(val_res);
+        size -= sizeof(val_res);
+
+        return MessageErrorStatus::Success;
+    }
+
     static MessageErrorStatus readString(const std::byte *&buf, std::size_t &size, std::string &str){
         MessageErrorStatus res;
 
@@ -99,6 +110,22 @@ protected:
         *reinterpret_cast<uint16_t*>(buf) = htons(val);
         buf += sizeof(uint16_t);
         size -= sizeof(uint16_t);
+
+        return MessageErrorStatus::Success;
+    }
+
+    static MessageErrorStatus writeUInt32(std::byte *&buf, std::size_t &size, uint32_t val){
+        if(size < sizeof(val)){
+            return MessageErrorStatus::Overflow;
+        }
+
+        if(std::numeric_limits<uint32_t>::max() < val){
+            return MessageErrorStatus::Overflow;
+        }
+
+        *reinterpret_cast<uint32_t*>(buf) = htonl(val);
+        buf += sizeof(uint32_t);
+        size -= sizeof(uint32_t);
 
         return MessageErrorStatus::Success;
     }

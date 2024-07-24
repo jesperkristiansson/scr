@@ -32,7 +32,7 @@ namespace ServerMessages{
         MessageMessage(const std::string &from_name, const std::string &str) : from_name(from_name), msg(str) {}
 
         std::size_t size() const override{
-            return sizeof(MessageType) + sizeof(uint16_t) + from_name.size() + sizeof(uint16_t) + msg.size();
+            return sizeof(MessageType) + sizeof(time) + sizeof(uint16_t) + from_name.size() + sizeof(uint16_t) + msg.size();
         }
 
         MessageErrorStatus read(const std::byte *&buf, std::size_t &size) override{
@@ -43,6 +43,12 @@ namespace ServerMessages{
 
             //verify type
             res = readType(_buf, _size, type());
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
+            //read time
+            res = readUInt32(_buf, _size, time);
             if(res != MessageErrorStatus::Success){
                 return res;
             }
@@ -76,6 +82,12 @@ namespace ServerMessages{
                 return res;
             }
 
+            //write time
+            res = writeUInt32(_buf, _size, time);
+            if(res != MessageErrorStatus::Success){
+                return res;
+            }
+
             //write name
             res = writeString(_buf, _size, from_name);
             if(res != MessageErrorStatus::Success){
@@ -93,6 +105,7 @@ namespace ServerMessages{
 
             return MessageErrorStatus::Success;
         }
+        uint32_t time;
         std::string from_name;
         std::string msg;
     };
