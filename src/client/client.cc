@@ -2,6 +2,9 @@
 #include "client/server.h"
 #include "client/stringToMessage.h"
 
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include <poll.h>
 #include <unistd.h>
 
@@ -126,7 +129,14 @@ bool Client::handle_input(){
 int Client::handle_message(const ServerMessage *msg){
     if(dynamic_cast<const ServerMessages::MessageMessage *>(msg)){
         const ServerMessages::MessageMessage *message = dynamic_cast<const ServerMessages::MessageMessage *>(msg);
-        std::string line = message->from_name + ": " + message->msg;
+
+        const char *fmt = "%H:%M:%S";
+        std::time_t t = static_cast<std::time_t>(message->time);
+        std::tm tm = *std::localtime(&t);
+        std::ostringstream time_stream;
+        time_stream << std::put_time(&tm, fmt);
+
+        std::string line = time_stream.str() + ": " + message->from_name + ": " + message->msg;
         screen.put_message(line);
         screen.update_screen();
         //std::cout << message->from_name << ": " << message->msg << std::endl;
