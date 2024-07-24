@@ -9,6 +9,7 @@
 struct message_info{
     std::string msg;
     std::tm tm;
+    std::string user_name;
 };
 
 class LogDatabase{

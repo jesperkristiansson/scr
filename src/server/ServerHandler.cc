@@ -23,7 +23,7 @@ void ServerHandler::handle(ClientMessages::MessageMessage &msg, User &from){
 
     std::time_t t = std::time(nullptr);
     std::tm tm = *std::localtime(&t);
-    struct message_info mi = {.msg = msg.msg, .tm = tm};
+    struct message_info mi = {.msg = msg.msg, .tm = tm, .user_name = from.get_name()};
 
     server->log_db.add_message(mi, from.get_room()->getName());
     server->house.echo_message(&from, msg.msg);
