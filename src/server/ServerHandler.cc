@@ -6,6 +6,7 @@
 #include "common/serverMessages.h"
 
 #include <iostream>
+#include <ctime>
 #include <unistd.h>
 
 void ServerHandler::handle(ClientMessages::JoinMessage& msg, User &from){
@@ -19,7 +20,12 @@ void ServerHandler::handle(ClientMessages::QuitMessage& msg [[maybe_unused]], Us
 
 void ServerHandler::handle(ClientMessages::MessageMessage &msg, User &from){
     std::cout << "Received message : \"" << msg.msg << "\" from client " << from.get_name() << std::endl;
-    server->log_db.add_message(msg.msg, from.get_room()->getName());
+
+    std::time_t t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    struct message_info mi = {.msg = msg.msg, .tm = tm};
+
+    server->log_db.add_message(mi, from.get_room()->getName());
     server->house.echo_message(&from, msg.msg);
 }
 
