@@ -4,7 +4,7 @@
 #include <cassert>
 
 namespace{
-    constexpr char SEPARATOR = ':';
+    constexpr char SEPARATOR = ';';
 
     //replace with cryptographic hashing function, e.g. from openSSL
     std::string hash(const std::string &input){
