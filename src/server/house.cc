@@ -20,6 +20,6 @@ bool House::move_user(User *user, const std::string &room_name){
     return true;
 }
 
-bool House::echo_message(User *user, const std::string &message){
-    return user->get_room()->send_message_from(message, user);
+bool House::echo_message(uint32_t time, User *user, const std::string &message){
+    return user->get_room()->send_message_from(message, time, user);
 }

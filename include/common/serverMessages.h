@@ -29,7 +29,7 @@ namespace ServerMessages{
     class MessageMessage : public MessageBase<MessageMessage, ServerMessage::MessageType::MessageMessage>{
     public:
         MessageMessage() {}
-        MessageMessage(const std::string &from_name, const std::string &str) : from_name(from_name), msg(str) {}
+        MessageMessage(uint32_t time, const std::string &from_name, const std::string &str) : time(time), from_name(from_name), msg(str) {}
 
         std::size_t size() const override{
             return sizeof(MessageType) + sizeof(time) + sizeof(uint16_t) + from_name.size() + sizeof(uint16_t) + msg.size();

@@ -12,7 +12,7 @@ class Room{
         std::string getName() const {return name;}
         bool add_member(User *member);
         bool remove_member(User *member);
-        bool send_message_from(std::string message, User *from);
+        bool send_message_from(std::string message, uint32_t time, User *from);
     private:
         std::string name;
         std::unordered_set<User *> members;

@@ -26,7 +26,7 @@ void ServerHandler::handle(ClientMessages::MessageMessage &msg, User &from){
     struct message_info mi = {.msg = msg.msg, .tm = tm, .user_name = from.get_name()};
 
     server->log_db.add_message(mi, from.get_room()->getName());
-    server->house.echo_message(&from, msg.msg);
+    server->house.echo_message(static_cast<uint32_t>(t), &from, msg.msg);
 }
 
 void ServerHandler::handle(ClientMessages::LoginMessage &msg, User &from){

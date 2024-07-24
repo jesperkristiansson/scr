@@ -20,8 +20,8 @@ bool Room::remove_member(User *member){
     }
 }
 
-bool Room::send_message_from(std::string message, User *from){
-    ServerMessages::MessageMessage msg(from->get_name(), message);
+bool Room::send_message_from(std::string message, uint32_t time, User *from){
+    ServerMessages::MessageMessage msg(time, from->get_name(), message);
     for(User *member : members){
         if(!member->send_message(msg)){
             return false;
