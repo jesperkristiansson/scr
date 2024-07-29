@@ -1,6 +1,5 @@
 #include "client/client.h"
 #include "client/server.h"
-#include "client/stringToMessage.h"
 
 #include <ctime>
 #include <iomanip>
@@ -17,6 +16,13 @@ std::variant<Client, int> Client::create(Screen &screen, const char *ip, uint16_
     }
     return Client(screen, std::move(serv));
 }
+
+Client::Client(Client &&other) :
+    server(std::move(other.server)),
+    screen{other.screen},
+    username(std::move(other.username)),
+    handler(this)
+{}
 
 bool Client::log_in(){
     std::string password;
@@ -118,12 +124,7 @@ bool Client::handle_input(){
         return true;
     }
 
-    ClientMessage::MessagePointer msgPtr = string_to_message(line);
-    if(!msgPtr){
-        std::cerr << "string_to_message returned nullptr" << std::endl;
-    }
-
-    return server.send_message(*msgPtr);
+    return handler.handleInput(line);
 }
 
 int Client::handle_message(const ServerMessage *msg){
