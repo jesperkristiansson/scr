@@ -20,6 +20,8 @@ public:
 
     bool log_in();
     bool client_loop();
+
+    void put_error(const std::string &msg);
 private:
     Server server;
     Screen &screen;

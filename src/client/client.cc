@@ -118,6 +118,11 @@ bool Client::client_loop(){
     return true;
 }
 
+void Client::put_error(const std::string &msg){
+    std::string out = "<Error>: " + msg;
+    screen.put_message(out);
+}
+
 bool Client::handle_input(){
     std::string line;
     if(!screen.get_input(line)){
