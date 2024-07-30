@@ -51,6 +51,7 @@ bool InputHandler::joinHandler(const std::string &input){
         client->put_error(err);
         return false;
     }
+    client->set_room(room); //todo: set room when receiving ack from server instead
     return client->server.send_message(ClientMessages::JoinMessage(room));
 }
 
