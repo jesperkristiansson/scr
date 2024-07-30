@@ -22,6 +22,7 @@ public:
     bool client_loop();
 
     void put_error(const std::string &msg);
+    void set_room(const std::string &room);
 private:
     Server server;
     Screen &screen;

@@ -72,7 +72,7 @@ bool Client::client_loop(){
     struct pollfd &server_item = items[server_index];
 
     screen.start_app();
-    screen.set_info("Simple Chat Room");
+    set_room("default");
 
     constexpr int timeout_ms = 100;
     while(1){
@@ -121,6 +121,11 @@ bool Client::client_loop(){
 void Client::put_error(const std::string &msg){
     std::string out = "<Error>: " + msg;
     screen.put_message(out);
+}
+
+void Client::set_room(const std::string &room){
+    std::string title = "Simple Chat Room - " + room;
+    screen.set_info(title);
 }
 
 bool Client::handle_input(){
