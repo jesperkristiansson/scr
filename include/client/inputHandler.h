@@ -14,6 +14,7 @@ public:
 
     bool joinHandler(const std::string &args);
     bool quitHandler(const std::string &args);
+    bool helpHandler(const std::string &args);
 private:
     Client *client;
 };

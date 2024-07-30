@@ -11,11 +11,14 @@ namespace{
     struct command{
         const char *command_text;
         HandlerFunc handler;
+        std::string usage;
+        std::string description;
     };
 
-    constexpr static struct command registered_commands[] = {
-        {.command_text = "join", .handler = &InputHandler::joinHandler},
-        {.command_text = "quit", .handler = &InputHandler::quitHandler},
+    const struct command registered_commands[] = {
+        {.command_text = "join", .handler = &InputHandler::joinHandler, .usage="/join <room>", .description="Changes chat room to <room>."},
+        {.command_text = "quit", .handler = &InputHandler::quitHandler, .usage="/quit", .description="Quits this application."},
+        {.command_text = "help", .handler = &InputHandler::helpHandler, .usage="/help", .description="Displays this help text."},
     };
 }
 
@@ -25,7 +28,7 @@ bool InputHandler::handleInput(const std::string &input) {
         std::string command;
         ss >> command;
 
-        for(struct command registered_command : registered_commands){
+        for(const struct command &registered_command : registered_commands){
             if(command.compare(1, std::string::npos, registered_command.command_text) == 0){
                 //do command
                 std::string remainder;
@@ -57,4 +60,13 @@ bool InputHandler::joinHandler(const std::string &input){
 
 bool InputHandler::quitHandler(const std::string &input [[maybe_unused]]){
     return client->server.send_message(ClientMessages::QuitMessage());
+}
+
+bool InputHandler::helpHandler(const std::string &input [[maybe_unused]]){
+    std::string message = "Help:";
+    for(const struct command &command : registered_commands){
+        message += '\n' + command.usage + " - " + command.description;
+    }
+    client->screen.put_message(message);
+    return true;
 }
