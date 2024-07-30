@@ -118,6 +118,8 @@ void Screen::set_info(const std::string &str){
         //print warning?
     }
 
+    //clear old
+    werase(info.win);
     //center
     int start_x = (info.width - str_len)/2;
     mvwaddstr(info.win, 0, start_x, str.substr(0, str_len).c_str());
