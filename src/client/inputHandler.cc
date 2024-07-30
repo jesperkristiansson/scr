@@ -21,14 +21,16 @@ namespace{
 
 bool InputHandler::handleInput(const std::string &input) {
     if(input.size() && input[0] == '/'){    //is a command
-        std::stringstream ss(input);
+        std::istringstream ss(input);
         std::string command;
         ss >> command;
 
         for(struct command registered_command : registered_commands){
             if(command.compare(1, std::string::npos, registered_command.command_text) == 0){
                 //do command
-                return std::invoke(registered_command.handler, this, ss.str());
+                std::string remainder;
+                getline(ss, remainder);
+                return std::invoke(registered_command.handler, this, remainder);
             }
         }
 
