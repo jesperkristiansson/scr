@@ -2,9 +2,7 @@
 #include "client/client.h"
 #include "common/clientMessages.h"
 
-#include <iostream>
 #include <sstream>
-#include <utility>
 #include <functional>
 
 namespace{
@@ -34,7 +32,8 @@ bool InputHandler::handleInput(const std::string &input) {
             }
         }
 
-        std::cerr << "command \"" << command << "\" does not exist" << std::endl;
+        std::string err = "command \"" + command + "\" does not exist";
+        client->put_error(err);
         return false;
     } else{
         return client->server.send_message(ClientMessages::MessageMessage(input));
@@ -46,7 +45,8 @@ bool InputHandler::joinHandler(const std::string &input){
     std::istringstream ss(input);
     ss >> room;
     if(ss.fail()){
-        std::cerr << "command /join requires an argument" << std::endl;
+        std::string err = "command /join requires an argument";
+        client->put_error(err);
         return false;
     }
     return client->server.send_message(ClientMessages::JoinMessage(room));
