@@ -33,7 +33,9 @@ bool InputHandler::handleInput(const std::string &input) {
                 //do command
                 std::string remainder;
                 getline(ss, remainder);
-                return std::invoke(registered_command.handler, this, remainder);
+                bool ret = std::invoke(registered_command.handler, this, remainder);
+                client->screen.update_screen();
+                return ret;
             }
         }
 
