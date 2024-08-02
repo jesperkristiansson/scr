@@ -25,12 +25,16 @@ class Screen{
         void put_message(const std::string &str);
         bool get_input(std::string &str);
         void update_screen();
+        void resize_window();
     private:
         std::string buffer = std::string();
         unsigned int index = 0;
         struct _Window info;
         struct _Window top;
         struct _Window bottom;
+        std::string title;
+        int delay;
+
         static bool already_exists;
 };
 

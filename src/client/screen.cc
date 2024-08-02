@@ -4,14 +4,31 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <signal.h>
 
 bool Screen::already_exists = false;
+
+static bool resize_flag = false;
+
+/* Signal handler for SIGWINCH (terminal resize) */
+static void resize_handler(int){
+    resize_flag = true;
+}
 
 Screen::Screen() {
     if(already_exists){
         throw std::runtime_error("an instance of Screen already exists");
     }
     already_exists = true;
+
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = resize_handler;
+    int res = sigaction(SIGWINCH, &sa, NULL);   //possibly save and restore old handler?
+    if(res != 0){
+        throw std::runtime_error("sigaction error");
+    }
+
     initscr(); /* start the curses mode */
 }
 
@@ -25,18 +42,27 @@ void Screen::get_login(std::string &username, std::string &password){
     echo();
 
     const int buf_size = 64;
-
     char buf[buf_size];
+
+    int res;
 
     printw("Username: ");
     refresh();
-    getnstr(buf, buf_size);
+    int x,y;
+    getyx(stdscr, y, x);
+    // if a signal happens, getnstr returns ERR, if it's due to a terminal resize, we retry
+    do{
+        res = mvgetnstr(y, x, buf, buf_size);
+    } while(res == ERR && resize_flag);
     username = std::string(buf);
 
     noecho();
     printw("Password: ");
     refresh();
-    getnstr(buf, buf_size);
+    getyx(stdscr, y, x);
+    do{
+        res = mvgetnstr(y, x, buf, buf_size);
+    } while(res == ERR && resize_flag);
     password = std::string(buf);
 }
 
@@ -55,6 +81,7 @@ static void index_to_cursor(unsigned int index, unsigned int &x, unsigned int &y
 }
 
 bool Screen::start_app(int delay){
+    this->delay = delay;
     //bound delay 0-255
     if(delay < 0){
         delay = 0;
@@ -103,14 +130,15 @@ bool Screen::start_app(int delay){
     leaveok(bottom.win, true);
 
     werase(top.win);
+    refresh();
     wrefresh(top.win);
-	refresh();
 
     move(bottom.starty, bottom.startx);
     return true;
 }
 
 void Screen::set_info(const std::string &str){
+    title = str;
     size_t available_space = info.width;
     size_t str_len = str.size();
     if(str_len > available_space){
@@ -194,4 +222,23 @@ void Screen::update_screen(){
     index_to_cursor(index, x, y, COLS);
     move(bottom.starty + y, bottom.startx + x);
     doupdate();
+}
+
+void Screen::resize_window(){
+    if(!resize_flag){
+        return;
+    }
+
+    resize_flag = false;
+    clear();
+    endwin();
+    initscr();
+    start_app(delay);
+    set_info(title);
+
+    //reprint lower window
+    mvwaddstr(bottom.win, 0, 0, buffer.c_str());
+    wrefresh(bottom.win);
+
+    //todo: reprint upper window (need to keep a history of messages)
 }

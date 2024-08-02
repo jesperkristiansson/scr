@@ -76,8 +76,12 @@ bool Client::client_loop(){
 
     constexpr int timeout_ms = 100;
     while(1){
+        screen.resize_window();
         int num_events = poll(items, 2, timeout_ms);
         if(num_events == -1){
+            if(errno == EINTR){     //system calls might be interrupted by signal (e.g. resizing window)
+                continue;
+            }
             perror("poll()");
             return false;
         } else if(num_events > 0){
