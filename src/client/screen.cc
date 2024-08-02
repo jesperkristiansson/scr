@@ -154,9 +154,14 @@ void Screen::set_info(const std::string &str){
     wrefresh(info.win);
 }
 
-void Screen::put_message(const std::string &str){
+void Screen::put_message_nosave(const std::string &str){
     wprintw(top.win, "%s\n", str.c_str());
     wnoutrefresh(top.win);
+}
+
+void Screen::put_message(const std::string &str){
+    put_message_nosave(str);
+    history.push_back(str);     //todo: have an upper limit on number of messages
 }
 
 bool Screen::get_input(std::string &str){
@@ -240,5 +245,9 @@ void Screen::resize_window(){
     mvwaddstr(bottom.win, 0, 0, buffer.c_str());
     wrefresh(bottom.win);
 
-    //todo: reprint upper window (need to keep a history of messages)
+    //reprint upper window
+    for(const std::string &message : history){
+        put_message_nosave(message);
+    }
+    update_screen();
 }

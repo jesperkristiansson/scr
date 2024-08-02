@@ -4,6 +4,7 @@
 #include <ncurses.h>
 
 #include <string>
+#include <vector>
 
 struct _Window{
     int height;
@@ -27,15 +28,21 @@ class Screen{
         void update_screen();
         void resize_window();
     private:
+        std::vector<std::string> history;
+
         std::string buffer = std::string();
         unsigned int index = 0;
+
         struct _Window info;
         struct _Window top;
         struct _Window bottom;
+
         std::string title;
         int delay;
 
         static bool already_exists;
+
+        void put_message_nosave(const std::string &str);
 };
 
 #endif
